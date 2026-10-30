@@ -18,7 +18,7 @@
     "format": "biome check --write .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "pnpm check:content && pnpm lint && pnpm typecheck && pnpm test && pnpm check:php && pnpm build",
+    "check": "pnpm check:content && pnpm lint && pnpm typecheck && pnpm test && pnpm check:php && pnpm test:scripts && pnpm build",
     "prepare": "git rev-parse --git-dir >/dev/null 2>&1 && git config core.hooksPath .githooks || true",
     "dev:web": "vite",
     "deploy:check": "bash scripts/deploy-rsync.sh \"$DEPLOY_TARGET\"",
@@ -28,7 +28,8 @@
     "check:php": "pnpm lint:php && pnpm test:php && pnpm test:backup",
     "claims": "node scripts/claims.mjs",
     "check:content": "node scripts/claims.mjs --check && node scripts/check-copy.mjs",
-    "test:backup": "bash backend/tests/backup.test.sh"
+    "test:backup": "bash backend/tests/backup.test.sh",
+    "test:scripts": "python3 scripts/merge-htaccess.test.py && bash scripts/deploy-api.test.sh"
   },
   "dependencies": {
     "@clerk/react": "^6.18.3",

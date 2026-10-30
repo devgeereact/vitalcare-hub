@@ -10,6 +10,14 @@ use Vitalcare\Bootstrap;
 
 $root = getenv('VITALCARE_PRIVATE_ROOT') ?: dirname(__DIR__, 2) . '/.local-state/private';
 $name = getenv('VITALCARE_CONFIG') ?: 'prod';
+
+// Never show errors to visitors, and never let PHP write its log next to the script (that would be inside
+// the web root, where a file called "error_log" is not covered by a deny rule). Log to the private tree;
+// if that is not writable, an empty value sends it to the web server's own log instead.
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+$logDir = rtrim($root, '/') . '/logs';
+ini_set('error_log', is_dir($logDir) && is_writable($logDir) ? $logDir . '/php-error.log' : '');
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 $auth = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? null;
 
