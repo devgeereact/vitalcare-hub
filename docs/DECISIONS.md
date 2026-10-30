@@ -2,11 +2,19 @@
 
 One entry per significant choice. Newest first. "Approved" means the owner said so in the session on that date; "Proposed" needs an answer before the work that depends on it.
 
+## D-013: Repository visibility (2026-10-30)
+- **Status:** Proposed: needs the owner's choice
+- **Context:** The owner asked to make the repository public so CI can run. Kit rule: never go public to get around a limit; the owner may override it with a recorded, named exception. A public repository publishes its whole history. The history already contains personal and server details (see D-012), and rewriting history is not allowed.
+- **Options:** (A) make this repository public as it is; (B) create a **new** public repository from a clean, scrubbed tree with one fresh commit, and keep this private one as an archive; (C) keep private and fix the account billing; (D) keep private and rely on `pnpm check` locally.
+- **Decision (recommended):** B if public is wanted (A would publish a director's date of birth details, server layout and a personal email address permanently); otherwise C.
+- **Approved by:** pending
+
 ## D-012: Where the source inventories live (2026-10-30)
 - **Status:** Approved 2026-10-30 (owner replied "approved" to the recommended options; any server or account write it implies still needs its own named go)
-- **Context:** The brief says no trace of the old brand or the template remains in this folder. The planning record necessarily names the old system, its tables and the template.
+- **Context:** The brief says no trace of the old brand or the template remains in this folder. The planning record necessarily names the old system, its tables and the template, and the claims audit holds personal details about named people.
 - **Options:** (a) keep the record under `docs/history/` and exempt it from the rebrand audit; (b) keep it outside the repo; (c) delete it after cutover.
-- **Decision (recommended):** (a) now, (c) after cutover. The product tree (`src/`, `public/`, `backend/`, emails, PDFs, metadata, built `dist/`) contains none of it and is audited that way.
+- **Decision (recommended):** (a) now, (c) after cutover.
+- **Update 2026-10-30:** because the repository may become public (D-013), the record was moved to `.local-state/history/` (git-ignored, local only) and is no longer in the working tree. It remains in the git history of the private repository. The product tree (`src/`, `public/`, `backend/`, emails, PDFs, metadata, built `dist/`) contains none of it and is audited that way.
 - **Approved by:** owner, 2026-10-30
 
 ## D-011: Public sign-up in Clerk (2026-10-30)
@@ -40,7 +48,7 @@ One entry per significant choice. Newest first. "Approved" means the owner said 
 
 ## D-006: Database: new, not the existing one (2026-10-30)
 - **Status:** Approved 2026-10-30 (owner replied "approved" to the recommended options; any server or account write it implies still needs its own named go)
-- **Context:** `devgeereact_vitalcare_uk` exists (about 10 MB, one user with all privileges). Its contents were not read. One all-privileges user breaks the runtime/migration split.
+- **Context:** `<account>_vitalcare_uk` exists (about 10 MB, one user with all privileges). Its contents were not read. One all-privileges user breaks the runtime/migration split.
 - **Decision (recommended):** Leave it untouched; create a new empty database with two users; list the old one for the owner to delete after taking a cPanel backup.
 - **Approved by:** owner, 2026-10-30 (creating it is E7 and still needs a named go)
 

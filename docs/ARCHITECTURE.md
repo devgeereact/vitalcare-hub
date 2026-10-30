@@ -21,7 +21,7 @@ Browser (React PWA, Clerk JS)  --HTTPS-->  Cloudflare  -->  cPanel (LiteSpeed)
 | Routing / data | React Router, TanStack Query (polling) | decided in slice R1 |
 | API | PHP 8.2+ on cPanel, no framework, PDO prepared statements only | house default. Web PHP version for the domain is UNKNOWN (CLI is 8.4.27; the selector lists 8.1 to 8.3): `composer.json` pins platform 8.2.0 until `/api/health` reports the real version |
 | Database | MariaDB 11.4.13 (server), 13.0 locally | one runtime user (data only), one migration user (schema) |
-| Auth | Clerk production instance, email code only; roles in our database | Reuse `app_3LOgOCUFQMebqtTaB9vAmCOOl8X`. Public sign-up is closed once users exist |
+| Auth | Clerk production instance, email code only; roles in our database | Reuse the existing Clerk production application. Public sign-up is closed once users exist |
 | Token check | `Jwt.php` from siterelay: RS256, JWKS cached, `iss`, `exp`, `nbf`, `sub`, `azp`, fail closed | exception to "maintained JWT library", see D-005 |
 | Email | cPanel SMTP from `info@vitalcare.uk`, queued in an outbox table, sent by cron | no Resend (opt-in service, not needed) |
 | Files | private folder `~/vitalcare-private/storage`, `files` table, `GET /api/files/{id}` | replaces three storage buckets |
@@ -62,7 +62,7 @@ docs/                plans, decisions, authorisation map, schema map, claims reg
 2. PHP verifies the token (`Jwt.php`), then resolves `sub` to a `users` row by `clerk_user_id`. On the first sign-in only, if no row matches, it links the one row whose `email` equals the verified `email` claim and whose `clerk_user_id` is empty. Anyone else is authenticated but has no access: every endpoint returns 403.
 3. `Authz` decides every action from the user row (role, organisation, active flag). Request bodies never supply role, owner or organisation ids. See `docs/AUTHORISATION-MAP.md`: policy, PHP check, test.
 4. Because Clerk sign-up is currently public, step 2's "no row, no access" rule is what protects the data. Closing sign-up is a Clerk write that waits for approval.
-5. The first `super_admin` row (gakinz101@gmail.com, no password concept) is created by `backend/bin/seed-super-admin.php`, run once with that email (E13). It is not a migration, so no personal address is stored in the repository. No demo, test or migrated users are ever created.
+5. The first `super_admin` row (the owner, no password concept) is created by `backend/bin/seed-super-admin.php`, run once with that email (E13). It is not a migration, so no personal address is stored in the repository. No demo, test or migrated users are ever created.
 
 ## Public endpoints (no token)
 

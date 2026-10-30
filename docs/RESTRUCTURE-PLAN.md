@@ -23,13 +23,13 @@
 | `src/lib/dates.ts` (calendar-month arithmetic) and `tests/unit/compliance-dates.test.ts` | KEEP as specification | Re-implemented in TypeScript and PHP with the same 30 assertions |
 | `src/lib/certificates`, `invoices`, `exports` | REFACTOR | Certificate moves server-side (D-007); invoices and workbooks re-specified |
 | `supabase/migrations/*` (95) | MIGRATE (design only) | Behaviour captured in `docs/AUTHORISATION-MAP.md` and `docs/SCHEMA-MAP.md`; new numbered MariaDB migrations written fresh. Seed and demo migrations (030, 032, 047, 048, 049, 078, 080) not carried |
-| `supabase/functions/*` (23) | REFACTOR or CUT | ~10 endpoint groups rebuilt in PHP; ~14 cut (see `docs/history/inv-backend.md`) |
+| `supabase/functions/*` (23) | REFACTOR or CUT | ~10 endpoint groups rebuilt in PHP; ~14 cut (see the Phase 0 back-end inventory, kept privately) |
 | `tests/security/*` (104 assertions), `tests/journey/*` (31), `tests/unit/*` (81) | KEEP as specification | Each becomes a PHP or journey test for the matching slice |
 | `public/logos/*.svg` (4) | KEEP | Byte-identical copies, never edited |
 | `public/` template images (`cards`, `images/*`, `products`, `illustrations`, `vite.svg`) | DUPLICATE / not used | Not carried (about 36 MB) |
 | `index.html`, `manifest`, `robots.txt`, `sw.js`, `scripts/generate-sitemap.mjs` | REFACTOR | Rewritten for the new brand and the new service-worker rules |
 | `.github/workflows/*` | REFACTOR | CI kept cheap; no deploy job; Semgrep and gitleaks added |
-| `docs/*` | ARCHIVE | Only `LAUNCH-READINESS`, `PRIVACY-DATA-MAP`, `LOCAL-ENVIRONMENT` informed this plan; summarised in `docs/history/`; originals stay in the source |
+| `docs/*` | ARCHIVE | Only `LAUNCH-READINESS`, `PRIVACY-DATA-MAP`, `LOCAL-ENVIRONMENT` informed this plan; summarised in the Phase 0 record kept privately (not in this repository); originals stay in the source |
 | `LICENSE.md` (template licence), `documentation.pdf`, `components.json`, `.idea`, `.gstack`, `graphify-out`, `memory/`, `test-results/`, `*.tsbuildinfo`, `supabase/.temp/*` | not carried | Template or junk. Licence file dropped because no template file is copied; revisit if any template component survives |
 | `CLAUDE.md`, `AGENTS.md`, `CODEX.md`, `.claude/rules/gee-os.md` | not carried | Describe the old project; replaced by this repo's `AGENTS.md`, `CLAUDE.md` and `.agent/` |
 | `.env*`, keys, dumps, uploads | never copied | By rule |

@@ -3,7 +3,7 @@
 # status: REQUIRED = the owner has not yet supplied proof. PROVEN = proof file and owner named.
 # Wording for REQUIRED claims is deliberately empty: nothing ships until it is proven.
 # Evidence references point to files kept outside this repository when they hold personal data.
-# Updated 30 Oct 2026 from docs/history/inv-claims.md.
+# Updated 30 Oct 2026 from the Phase 0 claims audit (kept privately, not in this repository).
 
 company_identity:
   status: PROVEN

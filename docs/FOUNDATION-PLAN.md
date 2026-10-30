@@ -7,11 +7,11 @@ Status: PLANNED. **Nothing below has been done.** Each numbered item is a write 
 | Thing | Value |
 |---|---|
 | Domain | vitalcare.uk (Cloudflare zone active, Free plan, Full strict, Always HTTPS on) |
-| Docroot | `~/vitalcare.uk` on cPanel account `devgeereact` (shared with unrelated sites: every command names this path only) |
+| Docroot | `~/vitalcare.uk` on the cPanel account (shared with unrelated sites: every command names this path only) |
 | Private tree | `~/vitalcare-private/{app,config,storage,tmp}` (new, mode 0700) |
 | Backups | `~/vitalcare-backups/` (exists; holds the previous site's files, kept) with new `db/` and `files/` |
 | Repo | `devgeereact/vitalcare-hub`, private, default branch `main`; the old public repo is untouched |
-| Clerk | `app_3LOgOCUFQMebqtTaB9vAmCOOl8X`, production `ins_3LOgSJSEHrr7abjOsF1hnqLOMba`, key name `VITE_CLERK_PUBLISHABLE_KEY` |
+| Clerk | the existing production application and instance, key name `VITE_CLERK_PUBLISHABLE_KEY` |
 | Ports (local) | frontend 5175, API 3175, local MariaDB for tests (throwaway) |
 | Cost | none new. No paid service or plan change |
 
@@ -29,12 +29,12 @@ L1 scaffold, install, baseline `pnpm check` (DONE: green, 12 tests). L2 planning
 | E4 | Repository secret `SEMGREP_APP_TOKEN`: **you** enter it in GitHub; I never see it | that repo, Secrets | secret name in the list | delete |
 | E5 | **DONE 30 Oct 2026.** Pre-change backup of the live docroot files and `.htaccess` | `~/vitalcare-backups/pre-release-20261030-121438/` (mode 0700; `files/` plus `MANIFEST.sha256`) | 16 live files, 16 backed up, all 16 identical by SHA-256; the origin-lock block is present in the saved `.htaccess`. Live docroot was only read | none needed |
 | E6 | Create the private directories | `~/vitalcare-private/{app,config,storage,tmp}`, mode 0700 | `ls -ld` | remove the empty folders |
-| E7 | Create the MariaDB database and two users through cPanel's own API. Passwords are generated on the server and written straight into the 0600 config file; they are never printed or passed through chat. Names (proposed): database `devgeereact_vch`, users `devgeereact_vch_mig` (schema) and `devgeereact_vch_run` (data only) | cPanel account `devgeereact` | `uapi Mysql list_databases` names and privilege lists (no passwords) | drop the new empty database and users. The existing `devgeereact_vitalcare_uk` is not touched |
+| E7 | Create the MariaDB database and two users through cPanel's own API. Passwords are generated on the server and written straight into the 0600 config file; they are never printed or passed through chat. Names (proposed): database `<account>_vch`, users `<account>_vch_mig` (schema) and `<account>_vch_run` (data only) | the cPanel account | `uapi Mysql list_databases` names and privilege lists (no passwords) | drop the new empty database and users. The existing `<account>_vitalcare_uk` is not touched |
 | E8 | Install the backup script and cron: nightly database dump and files copy, verify, then prune, keep 3 plus 1 pinned pre-migration; plus the restore test into a scratch database | `~/vitalcare-private/app/bin/`, user crontab (add only our lines; the 19 existing lines are untouched) | a dump created, checked complete, restored into a scratch database, row counts match | remove our crontab lines |
 | E9 | Merge our rules into the live `.htaccess`: keep the Cloudflare origin lock block byte-identical, add `/api/` routing, security headers and the CSP naming the Clerk hosts. I show a unified diff against the live file first; the previous file is saved by E5 | `~/vitalcare.uk/.htaccess` only | diff, then `curl -I` of the headers and the deep-link test | restore the saved copy |
 | E10 | (Note: `public/robots.txt` is `Disallow: /` until launch is approved on purpose; uploading it replaces the live coming-soon robots file, which currently allows crawling. Say if you want that.) Upload the built site and the API shim with `rsync` (no `--delete`, `--exclude '/.htaccess'`, checksum dry run shown first). `index.html` and `sw.js` last | `~/vitalcare.uk/` | dry-run list, then the public build ID check | re-upload the previous build from E5 |
 | E11 | Upload the private app and vendor, and write `config/prod.php` on the server from values you supply in your own terminal (I give you the exact command; I never see the values) | `~/vitalcare-private/` | `/api/health` returns ok with PHP version, `authConfigured: true` | remove the files |
-| E12 | Apply migrations with the migration user, after a pinned pre-migration backup and after each file was rehearsed locally on a structure-only throwaway database | the new `devgeereact_vch` | `schema_migrations` listing | restore from the pinned backup |
+| E12 | Apply migrations with the migration user, after a pinned pre-migration backup and after each file was rehearsed locally on a structure-only throwaway database | the new `<account>_vch` | `schema_migrations` listing | restore from the pinned backup |
 | E13 | Seed the super admin row by running `php bin/seed-super-admin.php <email> "<name>"` on the server (email and name only; no password concept; no demo users; it refuses an email that already exists) | new database | one row, role `super_admin`, no Clerk id until first sign-in | delete the row |
 | E14 | Cloudflare Turnstile widget for the contact form (free); site key is public, the secret goes into `config/prod.php` by you | Cloudflare account, zone `vitalcare.uk` | widget listing (key name only) | delete the widget |
 | E15 | Cloudflare DNS for local-live: `local.vitalcare.uk` pointing to `127.0.0.1`, DNS only | zone `vitalcare.uk` | `dig` result | delete the record |
@@ -42,7 +42,7 @@ L1 scaffold, install, baseline `pnpm check` (DONE: green, 12 tests). L2 planning
 | E17 | Replace the coming-soon page by the first release | covered by E10 | public URL shows the new build ID | rollback as E10 |
 | E18 | Cutover housekeeping (separate approval, later): rename the old repo to `Vitalcare-Training-Hub-legacy`; optionally rename the new repo; retire the old project | GitHub | `gh repo view` | rename back |
 
-Things only you do (I list, never act): delete the dead crontab line for `api/cron.php`; delete `~/vc_cron.log`, `~/vitalcare.uk/api/` stub and the stale `~/vitalcare.uk/error_log` after the new site is live; decide about `~/vitalcare-cs-staging` and the old database `devgeereact_vitalcare_uk` (take a cPanel backup download first); enter the SMTP mailbox password and Turnstile secret into the private config; enter `SEMGREP_APP_TOKEN` in GitHub; rotate or retire the old Supabase project's published passwords.
+Things only you do (I list, never act): delete the dead crontab line for `api/cron.php`; delete `~/vc_cron.log`, `~/vitalcare.uk/api/` stub and the stale `~/vitalcare.uk/error_log` after the new site is live; decide about `~/vitalcare-cs-staging` and the old database `<account>_vitalcare_uk` (take a cPanel backup download first); enter the SMTP mailbox password and Turnstile secret into the private config; enter `SEMGREP_APP_TOKEN` in GitHub; rotate or retire the old Supabase project's published passwords.
 
 ## Backups (FULL tier)
 

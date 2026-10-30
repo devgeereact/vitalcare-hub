@@ -2,7 +2,7 @@
 
 Date: 30 Oct 2026. Mode: PREPARE_ONLY, read-only. SOURCE: `~/Developer/Projects/Vitalcare-Training-Hub` (not modified; `git status` shows only the pre-existing `supabase/.temp/cli-latest` change). DESTINATION: not created yet (name follows the brand in Phase 2).
 
-Supporting files, same folder: `inv-backend.md` (435 lines), `inv-claims.md` (232 lines), `history/policy-inventory.md`, `db-state.json`, `tbl_marketing.md`, `tbl_auth.md`, `tbl_platform.md`, `queries-table.md`. These move to `docs/DISCOVERY.md` and `docs/inventory/` in the new repo once it exists.
+Supporting files (back-end inventory, claims audit, policy inventory, route tables) are kept privately, not in this repository.
 
 Status words: DONE (evidence) · PARTIAL · NOT TESTED · BLOCKED · PLANNED · ASSUMPTION.
 
@@ -19,9 +19,9 @@ Status words: DONE (evidence) · PARTIAL · NOT TESTED · BLOCKED · PLANNED · 
 | 24 edge functions | 24 folders = `_shared` + **23 functions**. | DONE |
 | About 190 direct `supabase.*` calls | 158 direct calls in 52 files, plus the `callRpc` wrapper (21 distinct RPCs). | DONE |
 | Launch is blocked | True. `docs/LAUNCH-READINESS.md`: "not ready", six non-code blockers (published super_admin password not rotated, live DB state unconfirmed, email sending unconfirmed, payment details empty, clinical approval outstanding, no restore rehearsed). | DONE |
-| Clerk app and production instance | `app_3LOgOCUFQMebqtTaB9vAmCOOl8X`, production `ins_3LOgSJSEHrr7abjOsF1hnqLOMba`, publishable key matches yours. Email code is the only sign-in and verification strategy; password off; every OAuth provider off; session claim `email` = `{{user.primary_email_address}}`; domain `vitalcare.uk` with `clerk.` and `accounts.` frontends. Sign-up mode is **public**. Bot protection **off**. First/last name **disabled** (names must live in our database). Session token lifetime 60 s, maximum 7 days. | DONE (read via Clerk API) |
-| `gakinz101@gmail.com` exists as a Clerk user | Not checked: listing users returns personal data and you already told me. | NOT TESTED |
-| Cloudflare: five Clerk CNAMEs, grey cloud | Confirmed: `clerk`, `accounts`, `clkmail`, `clk._domainkey`, `clk2._domainkey`, all DNS-only. Zone active, Free plan, SSL **Full (strict)**, Always Use HTTPS on. Apex and `www` proxied to `185.61.152.45`. MX is Namecheap (`jellyfish.systems`); SPF, DKIM, DMARC (`p=quarantine`) present. | DONE |
+| Clerk app and production instance | production instance, publishable key matches yours. Email code is the only sign-in and verification strategy; password off; every OAuth provider off; session claim `email` = `{{user.primary_email_address}}`; domain `vitalcare.uk` with `clerk.` and `accounts.` frontends. Sign-up mode is **public**. Bot protection **off**. First/last name **disabled** (names must live in our database). Session token lifetime 60 s, maximum 7 days. | DONE (read via Clerk API) |
+| the owner's address exists as a Clerk user | Not checked: listing users returns personal data and you already told me. | NOT TESTED |
+| Cloudflare: five Clerk CNAMEs, grey cloud | Confirmed: `clerk`, `accounts`, `clkmail`, `clk._domainkey`, `clk2._domainkey`, all DNS-only. Zone active, Free plan, SSL **Full (strict)**, Always Use HTTPS on. Apex and `www` proxied to the origin server address. MX is Namecheap (`jellyfish.systems`); SPF, DKIM, DMARC (`p=quarantine`) present. | DONE |
 
 ## 2. Systems — EXISTS / NEW / UNKNOWN / BLOCKED
 
@@ -29,7 +29,7 @@ Status words: DONE (evidence) · PARTIAL · NOT TESTED · BLOCKED · PLANNED · 
 |---|---|---|
 | Source repo `devgeereact/Vitalcare-Training-Hub` | EXISTS, **public**, default branch `production`, many stale remote branches (dependabot ×11, dev, update/2026-10-08, chore/add-gsap-lenis) | `git remote -v`, `git branch -a` |
 | New private GitHub repo | NEW | Not created. `gh` is logged in as `devgeereact` (scopes repo, workflow). |
-| cPanel account `devgeereact` @ premium17.web-hosting.com | EXISTS. **Shared with unrelated sites** (flightdeck, gakinz, egolimited, doyouknow and others). PHP CLI 8.4.27; extensions curl, fileinfo, gd, imagick, intl, mbstring, openssl, pdo_mysql, zip; **no `sodium`/`mysqli` listed** | SSH read-only |
+| cPanel account `devgeereact` @ the shared cPanel host | EXISTS. **Shared with unrelated sites** (flightdeck, gakinz, egolimited, doyouknow and others). PHP CLI 8.4.27; extensions curl, fileinfo, gd, imagick, intl, mbstring, openssl, pdo_mysql, zip; **no `sodium`/`mysqli` listed** | SSH read-only |
 | `~/vitalcare.uk` docroot (800 KB) | EXISTS. A **"Coming soon" holding page** (index.html 23 Oct), `sw.js`, `robots.txt`, `logos/`, six assets, an `api/uploads/course-media/banners/` stub and a stale `error_log` (July: `config.php` parse error). Every path returns 200 (SPA fallback); `/sitemap.xml` serves HTML though `robots.txt` points at it. | SSH + curl |
 | Live `.htaccess` | EXISTS. Top block = **Cloudflare origin lock** (403 unless `CF-RAY` header present, except `/.well-known/`), then SPA rewrite, cache headers, deny rules. No CSP header yet. Must be merged, never overwritten. | SSH read |
 | `~/vitalcare-cs-staging` | EXISTS. Copy of the same coming-soon page (704 KB), not wired to a domain I could see (UNKNOWN). | SSH |

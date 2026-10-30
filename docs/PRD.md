@@ -11,7 +11,7 @@ A care-sector training provider needs one system of record: sell and deliver sho
 | Individual learner (pays for themselves) | Find a course, book, learn, get a certificate anyone can verify, be told before it expires | `learner` |
 | Employer (training lead or manager) | Book staff in a group, see who is in date, get an invoice, verify a certificate, export the record | `manager`, scoped to their organisation |
 | Trainer (Harni Muharami today) | Run sessions online and in person, take attendance, mark assessments | `trainer` |
-| Owner and office | Publish courses and sessions, approve and issue certificates, reconcile orders, see who changed what | `admin`, `super_admin` (gakinz101@gmail.com) |
+| Owner and office | Publish courses and sessions, approve and issue certificates, reconcile orders, see who changed what | `admin`, `super_admin` (the owner) |
 | Public and inspectors | Check a certificate, read course facts | no sign-in |
 
 Customers are both individuals and companies. Delivery is both online and in person. Sales are by enquiry and bank transfer: no basket and no card payments in V1.
