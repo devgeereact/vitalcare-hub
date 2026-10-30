@@ -56,6 +56,8 @@ Allowed keys: `office_email`, `clerk.authorized_parties`, `turnstile.secret`, an
 
 ## Mail
 
+The sender is the dedicated mailbox `noreply@vitalcare.uk` (created 30 Oct 2026 with a server-generated password held only in the private config); replies go to `info@vitalcare.uk` through the Reply-To header. To rotate that password, generate a new one on the server, set it with `bin/config-set.php` and change it on the mailbox with the cPanel API in the same script, so it is never shown.
+
 Contact-form messages are queued in `outbox_email`; `bin/send-outbox.php` sends them every two minutes (cron) through the server's own SMTP on port 465 with certificate checking. It does nothing, silently, until the SMTP password is set. A failed send is retried after 1, 5, 15 and 60 minutes and then 4 hours; after 5 failures the row is marked `failed` and shown in the log. Only one sender runs at a time.
 
 ## Old project items kept

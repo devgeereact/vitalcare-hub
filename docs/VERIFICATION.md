@@ -28,6 +28,17 @@ What has actually been run and seen. Anything not listed is NOT TESTED.
 | Built `dist/` audit | no host other than documentation links; no trace of the earlier template or systems; 1.1 MB; the four logo files are byte-identical to the supplied ones (SHA-256 compared) |
 | PWA icons | regenerated from the supplied round logo by `scripts/make-icons.sh`; the starter's placeholder icons are gone |
 
+## Secrets, mail and the contact form, live (30 Oct 2026)
+
+| Check | Evidence |
+|---|---|
+| Owner's first attempt | the two secrets were identical (same text pasted twice, 20 characters, not in Cloudflare's format); SMTP login failed with `535`; nothing was exposed. The config tool now refuses both mistakes (75 assertions) |
+| Mail sender | the owner had no mailbox password to give, so I created a dedicated sender mailbox `noreply@vitalcare.uk` (50 MB quota) and generated its password **on the server**; it was written to the config through the config tool and never printed. `info@` is unchanged. A real TLS login and two messages were accepted by the mail server (to the office mailbox and to the owner's Gmail). Delivery to the inboxes is for the owner to confirm |
+| Turnstile secret | fetched via the Cloudflare API, piped into the config tool; Cloudflare answered a bogus token with `invalid-input-response`, which means it recognised the secret |
+| **End to end, live** | Chrome on `local.vitalcare.uk`: real widget token, form submitted, "Message sent"; the live API verified the token with Cloudflare; one enquiry stored (caller as a hash) and one outbox row; the **2-minute cron sent it by itself** at 14:14:14 UTC (`outbox.log`: `sent=1 retry=0 failed=0`); the visitor was the Reply-To. My test rows and probe script were then removed, leaving the database empty apart from the super admin |
+
+Still NOT TESTED: delivery of the test mails to real inboxes (SPF, DKIM and DMARC alignment as seen by Gmail), the 02:20 backup's first scheduled run, a real sign-in, and the `Authorization` header reaching PHP.
+
 ## local-live and the secrets (30 Oct 2026, after the owner said "done")
 
 | Check | Evidence |
