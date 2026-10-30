@@ -3,11 +3,12 @@
 One entry per significant choice. Newest first. "Approved" means the owner said so in the session on that date; "Proposed" needs an answer before the work that depends on it.
 
 ## D-013: Repository visibility (2026-10-30)
-- **Status:** Proposed: needs the owner's choice
-- **Context:** The owner asked to make the repository public so CI can run. Kit rule: never go public to get around a limit; the owner may override it with a recorded, named exception. A public repository publishes its whole history. The history already contains personal and server details (see D-012), and rewriting history is not allowed.
-- **Options:** (A) make this repository public as it is; (B) create a **new** public repository from a clean, scrubbed tree with one fresh commit, and keep this private one as an archive; (C) keep private and fix the account billing; (D) keep private and rely on `pnpm check` locally.
-- **Decision (recommended):** B if public is wanted (A would publish a director's date of birth details, server layout and a personal email address permanently); otherwise C.
-- **Approved by:** pending
+- **Status:** Approved 2026-10-30, **option A**: make this repository public as it is. This is a recorded, named exception to the kit rule "never make a repo public to get around a limit".
+- **Context:** GitHub refuses to start Actions jobs on the private repository because of an account payment or spending-limit problem. The owner chose to make it public so CI runs on free minutes. A public repository publishes its whole history, and rewriting history is not allowed.
+- **Options:** (A) public as it is; (B) new public repository from a clean tree; (C) private and fix billing; (D) private and local checks only.
+- **Decision:** A, chosen by the owner after being told what the history contains: a named director's birth month and year with the Companies House officer discrepancy, the owner's personal email address, and server details (cPanel account and host, `/home` paths, server address, Clerk identifiers). The working tree was scrubbed first and the two scrub commits pushed before the change, so the visible tree is clean; the earlier history is not.
+- **Consequences:** The exposed history items are permanent and may be cached or indexed. From now on everything committed is public: server specifics, credentials, personal data and unproven claims stay out of the repository (ops notes live in the git-ignored `.local-state/`). The earlier suggestion to treat the repo as private no longer holds, so secret hygiene rules apply with more force. Dependabot and Semgrep now run against a public repo.
+- **Approved by:** owner, 2026-10-30 ("A")
 
 ## D-012: Where the source inventories live (2026-10-30)
 - **Status:** Approved 2026-10-30 (owner replied "approved" to the recommended options; any server or account write it implies still needs its own named go)

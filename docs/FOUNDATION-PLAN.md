@@ -10,7 +10,7 @@ Status: PLANNED. **Nothing below has been done.** Each numbered item is a write 
 | Docroot | `~/vitalcare.uk` on the cPanel account (shared with unrelated sites: every command names this path only) |
 | Private tree | `~/vitalcare-private/{app,config,storage,tmp}` (new, mode 0700) |
 | Backups | `~/vitalcare-backups/` (exists; holds the previous site's files, kept) with new `db/` and `files/` |
-| Repo | `devgeereact/vitalcare-hub`, private, default branch `main`; the old public repo is untouched |
+| Repo | `devgeereact/vitalcare-hub`, public since 30 Oct 2026 (D-013), default branch `main`; the earlier project's repo is untouched |
 | Clerk | the existing production application and instance, key name `VITE_CLERK_PUBLISHABLE_KEY` |
 | Ports (local) | frontend 5175, API 3175, local MariaDB for tests (throwaway) |
 | Cost | none new. No paid service or plan change |
