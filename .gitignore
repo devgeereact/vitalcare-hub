@@ -18,6 +18,7 @@ backend/config/local.php
 # Private project-local testing and recovery (see docs/RULES.md §6)
 /.local-test/
 /.local-state/
+/.release/
 
 # Backups and dumps never belong in Git
 backups/

@@ -25,10 +25,11 @@
     "deploy": "bash scripts/deploy-rsync.sh \"$DEPLOY_TARGET\" --go",
     "lint:php": "find backend -name '*.php' -not -path 'backend/vendor/*' -print0 | xargs -0 -n1 php -l > /dev/null",
     "test:php": "bash scripts/test-db.sh up && php backend/tests/run.php",
-    "check:php": "pnpm lint:php && pnpm test:php && pnpm test:backup",
+    "check:php": "pnpm lint:php && pnpm test:php && pnpm test:backup && pnpm test:gate",
     "claims": "node scripts/claims.mjs",
     "check:content": "node scripts/claims.mjs --check && node scripts/check-copy.mjs",
     "test:backup": "bash backend/tests/backup.test.sh",
+    "test:gate": "bash backend/tests/deploy-gate.test.sh",
     "test:scripts": "python3 scripts/merge-htaccess.test.py && bash scripts/deploy-api.test.sh && bash scripts/server-config-set.test.sh"
   },
   "dependencies": {

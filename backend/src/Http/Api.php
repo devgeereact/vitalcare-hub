@@ -25,6 +25,7 @@ final class Api
      * @param (callable(string,?string):bool)|null $turnstile verifies a Turnstile token (token, client ip). Null means not configured
      * @param bool $turnstileBypass local development only: skip the Turnstile check. Never set in production config
      * @param (\Closure():\DateTimeImmutable)|null $clock injected by tests
+     * @param string $release first 12 characters of the deployed commit, or "unknown"; lets a deploy prove the new code is serving
      */
     public function __construct(
         private $verify,
@@ -35,6 +36,7 @@ final class Api
         private readonly bool $turnstileBypass = false,
         private readonly string $officeEmail = 'info@vitalcare.uk',
         private readonly ?\Closure $clock = null,
+        private readonly string $release = 'unknown',
     ) {
     }
 
@@ -74,7 +76,7 @@ final class Api
     /** @return array{0:int,1:array<string,mixed>} */
     private function health(): array
     {
-        return [200, ['status' => 'ok', 'php' => $this->phpVersion, 'authConfigured' => $this->authConfigured && $this->pdo !== null]];
+        return [200, ['status' => 'ok', 'php' => $this->phpVersion, 'authConfigured' => $this->authConfigured && $this->pdo !== null, 'release' => $this->release]];
     }
 
     /** @return array{0:int,1:array<string,mixed>} */

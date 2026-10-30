@@ -24,7 +24,7 @@ final class Bootstrap
         } catch (\Throwable $e) {
             error_log('[bootstrap] ' . $e->getMessage());
             // Not configured: /api/health still answers and says so; everything protected is 503.
-            return new Api(static fn (string $t): array => throw HttpError::unauthorized(), null, PHP_VERSION, false);
+            return new Api(static fn (string $t): array => throw HttpError::unauthorized(), null, PHP_VERSION, false, release: self::release());
         }
         $cache = rtrim($privateRoot, '/') . '/tmp';
         $jwt = new Jwt($c['clerk']['issuer'], $c['clerk']['authorized_parties'], $cache, self::fetch(...));
@@ -40,7 +40,16 @@ final class Bootstrap
             $turnstile,
             $c['turnstile']['dev_bypass'],
             $c['office_email'],
+            release: self::release(),
         );
+    }
+
+    /** Short id of the deployed commit, from the RELEASE file the deploy gate writes beside src/. */
+    public static function release(?string $file = null): string
+    {
+        $text = @file_get_contents($file ?? dirname(__DIR__) . '/RELEASE');
+        $id = is_string($text) ? trim($text) : '';
+        return preg_match('/^[0-9a-f]{40}$/', $id) === 1 ? substr($id, 0, 12) : 'unknown';
     }
 
     private static function fetch(string $url): string

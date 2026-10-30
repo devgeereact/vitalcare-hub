@@ -4,7 +4,7 @@ Base: `/api`. JSON in and out. Errors: `{"error":{"code":"...","message":"..."}}
 
 | Method | Path | Auth | Response | Errors | Status |
 |---|---|---|---|---|---|
-| GET | `/api/health` | none | `{"status":"ok","php":"<version>","authConfigured":true|false}` | 405 | DONE locally (tests + HTTP smoke); NOT deployed |
+| GET | `/api/health` | none | `{"status":"ok","php":"<version>","authConfigured":true|false,"release":"<12 hex or unknown>"}` | 405 | DONE locally (tests + HTTP smoke); NOT deployed |
 | GET | `/api/me` | Bearer Clerk session token | `{"user":{"id","email","displayName","role","organisationId"}}` | 401 no or invalid token; 403 `no_access` valid identity, no row; 405; 503 not configured | DONE locally; NOT deployed |
 
 | GET | `/api/verify/{code}` | none (public) | `{"status":"valid\|expired\|not_issued","certificate"?:{code,learnerName,courseTitle,hours,completedOn,expiresOn,issuer}}`; `Cache-Control: no-store` | 429 `rate_limited` (30 per 5 minutes per caller) with `Retry-After`; 503 | DONE locally (50 assertions + real browser check); NOT deployed |
