@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
-use Vitalcare\{Api, ContactService, HttpError, Turnstile};
+use Vitalcare\Http\Api;
+use Vitalcare\Contact\ContactService;
+use Vitalcare\Http\HttpError;
+use Vitalcare\Security\Turnstile;
 
 /** @var PDO $pdo */
 $tsOk = fn (string $token, ?string $ip): bool => $token === 'good-token';

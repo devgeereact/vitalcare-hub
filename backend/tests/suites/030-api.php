@@ -3,7 +3,8 @@
 declare(strict_types=1);
 
 // HTTP contract: health, /api/me, and the error shape.
-use Vitalcare\{Api, HttpError};
+use Vitalcare\Http\Api;
+use Vitalcare\Http\HttpError;
 
 /** @var PDO $pdo */
 $org = make_org($pdo, 'Test Org');

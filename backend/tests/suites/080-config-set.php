@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 // bin/config-set.php: allowlist, validation, atomic write, backups, and no value is ever printed.
-use Vitalcare\Config;
+use Vitalcare\Support\Config;
 
 $tmp = dirname(__DIR__, 3) . '/.local-test/tmp/cfgset-' . bin2hex(random_bytes(4));
 mkdir("$tmp/config", 0700, true);

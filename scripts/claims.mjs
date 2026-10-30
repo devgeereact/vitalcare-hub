@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Turns docs/claims.yml into src/generated/claims.ts. Only PROVEN claims are exported, so using a
-// claim that is still REQUIRED is a compile-time error (see src/content/claims.ts).
+// claim that is still REQUIRED is a compile-time error (see src/shared/content/claims.ts).
 //   node scripts/claims.mjs           write the file
 //   node scripts/claims.mjs --check   fail if the file is missing or stale (used by pnpm check)
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";

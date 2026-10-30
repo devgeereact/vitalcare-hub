@@ -6,11 +6,11 @@ import { ClerkProvider } from "@clerk/react";
 import { type ReactNode, StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import { App } from "./App";
-import { ClerkSession } from "./auth/ClerkSession";
-import { SessionContext } from "./auth/session";
-import { ErrorBoundary } from "./components/ErrorBoundary";
-import { CLERK_PUBLISHABLE_KEY } from "./config";
+import { App } from "@/app/App";
+import { ErrorBoundary } from "@/app/ErrorBoundary";
+import { ClerkSession } from "@/features/auth/ClerkSession";
+import { SessionContext } from "@/features/auth/session";
+import { CLERK_PUBLISHABLE_KEY } from "@/shared/config";
 import "./style.css";
 
 const root = document.getElementById("root");

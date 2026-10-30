@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 // "No row, no access": Clerk sign-up is public, so a valid identity alone grants nothing.
-use Vitalcare\SessionResolver;
+use Vitalcare\Auth\SessionResolver;
 
 /** @var PDO $pdo */
 $r = new SessionResolver($pdo);

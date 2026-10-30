@@ -4,6 +4,13 @@ declare(strict_types=1);
 
 namespace Vitalcare;
 
+use Vitalcare\Auth\Jwt;
+use Vitalcare\Http\Api;
+use Vitalcare\Http\HttpError;
+use Vitalcare\Security\Turnstile;
+use Vitalcare\Support\Config;
+use Vitalcare\Support\Db;
+
 require_once __DIR__ . '/Autoload.php';
 
 /** Builds the Api from the private configuration. Used by the front controller and the dev server. */

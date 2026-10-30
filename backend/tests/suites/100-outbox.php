@@ -2,7 +2,11 @@
 
 declare(strict_types=1);
 
-use Vitalcare\{ContactService, Db, OutboxSender, SmtpException, SmtpMailer};
+use Vitalcare\Contact\ContactService;
+use Vitalcare\Support\Db;
+use Vitalcare\Mail\OutboxSender;
+use Vitalcare\Mail\SmtpException;
+use Vitalcare\Mail\SmtpMailer;
 
 /** @var PDO $pdo */
 global $host, $port, $name, $user, $pass;

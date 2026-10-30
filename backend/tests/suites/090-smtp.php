@@ -2,7 +2,8 @@
 
 declare(strict_types=1);
 
-use Vitalcare\{SmtpException, SmtpMailer};
+use Vitalcare\Mail\SmtpException;
+use Vitalcare\Mail\SmtpMailer;
 
 $tmp = dirname(__DIR__, 3) . '/.local-test/tmp/smtp-' . bin2hex(random_bytes(4));
 mkdir($tmp, 0700, true);

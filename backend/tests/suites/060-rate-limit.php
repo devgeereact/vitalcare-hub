@@ -2,7 +2,8 @@
 
 declare(strict_types=1);
 
-use Vitalcare\{HttpError, RateLimiter};
+use Vitalcare\Http\HttpError;
+use Vitalcare\Security\RateLimiter;
 
 /** @var PDO $pdo */
 $t = 1_900_000_000;

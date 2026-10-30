@@ -35,15 +35,33 @@ Browser (React PWA, Clerk JS)  --HTTPS-->  Cloudflare  -->  cPanel (LiteSpeed)
 ## Folder layout
 
 ```
-src/                 frontend (components/, hooks/, services/ for all I/O, config.ts)
-backend/
-  public/index.php   the only web-exposed PHP (copied to ~/vitalcare.uk/api/index.php)
-  src/               Jwt, Authz, Db, Api, services, handlers
-  migrations/        numbered SQL, never edited once applied
-  bin/               cron.php, backup, migrate (CLI only)
-  tests/             PHPUnit against a throwaway local MariaDB (.local-test/)
-docs/                plans, decisions, authorisation map, schema map, claims register
+src/                         frontend (React, TypeScript, Vite)
+  main.tsx  App.tsx          entry and routes
+  features/                  one folder per product feature: components, hooks, services and tests together
+    auth/ account/ verify/ contact/ site/
+  shared/                    used by more than one feature: components, hooks, services/api, content/claims
+  generated/claims.ts        generated from docs/claims.yml; never edited
+backend/                     PHP API (PHP 8.2+, no framework, PSR-4 namespace Vitalcare\)
+  public/index.php           the only web-exposed PHP (a generated shim in the docroot requires it)
+  src/
+    Autoload.php Bootstrap.php
+    Http/                    Api (routes), HttpError
+    Auth/                    Jwt, SessionResolver, Authz, Role, User
+    Support/                 Db, Config, Migrator
+    Security/                RateLimiter, Turnstile
+    Mail/                    SmtpMailer, OutboxSender
+    Certificates/            CertificateCode, CertificateVerifier
+    Contact/                 ContactService
+    (further domains are added the same way: Catalogue/, Learning/, Sessions/, Commerce/)
+  bin/                       CLI tools (migrate, backup, config-set, seed, send-outbox); never web-served
+  migrations/                numbered SQL, never edited once applied
+  tests/                     PHP suites, run on a throwaway local MariaDB
+scripts/                     tested deploy and operations tools; the deploy workflow calls these
+.github/workflows/           CI, Semgrep and the deploy workflow
+docs/                        plans, decisions, authorisation map, schema map, claim register, runbook
 ```
+
+A domain folder holds the classes of one product area, so a change to (for example) certificates touches one folder, its tests and its migration.
 
 ## Server layout
 

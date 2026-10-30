@@ -3,7 +3,10 @@
 declare(strict_types=1);
 
 // The role matrix (docs/AUTHORISATION-MAP.md, decision D-010).
-use Vitalcare\{Authz, HttpError, Role, User};
+use Vitalcare\Auth\Authz;
+use Vitalcare\Http\HttpError;
+use Vitalcare\Auth\Role;
+use Vitalcare\Auth\User;
 
 $org1 = 'org-1';
 $org2 = 'org-2';

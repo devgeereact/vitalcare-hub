@@ -9,7 +9,9 @@ if (PHP_SAPI !== 'cli') {
 }
 require_once __DIR__ . '/../src/Bootstrap.php';
 
-use Vitalcare\{Config, Db, Migrator};
+use Vitalcare\Support\Config;
+use Vitalcare\Support\Db;
+use Vitalcare\Support\Migrator;
 
 $root = getenv('VITALCARE_PRIVATE_ROOT') ?: dirname(__DIR__, 2) . '/.local-state/private';
 $c = Config::load($root, getenv('VITALCARE_CONFIG') ?: 'prod');

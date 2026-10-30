@@ -19,14 +19,14 @@ BEFORE="$(cd "$H" && find . | sort | shasum -a 256)"
 OUT="$(deploy)"; rc=$?
 [ "$(cd "$H" && find . | sort | shasum -a 256)" = "$BEFORE" ]; check "dry run creates no files and no folders" $?
 check "dry run exits 0" $rc
-[ ! -e "$H/vitalcare-private/app/src/Api.php" ] && [ ! -e "$H/vitalcare.uk/api/index.php" ]; check "dry run writes nothing" $?
+[ ! -e "$H/vitalcare-private/app/src/Http/Api.php" ] && [ ! -e "$H/vitalcare.uk/api/index.php" ]; check "dry run writes nothing" $?
 echo "$OUT" | grep -q "DRY RUN"; check "dry run says it is a dry run" $?
 echo "$OUT" | grep -q "shim: would write"; check "dry run reports the shim it would write" $?
 
 # real deploy
 OUT="$(deploy --go)"; rc=$?
 check "deploy exits 0" $rc
-cmp -s backend/src/Api.php "$H/vitalcare-private/app/src/Api.php"; check "source files are copied exactly" $?
+cmp -s backend/src/Http/Api.php "$H/vitalcare-private/app/src/Http/Api.php"; check "source files are copied exactly" $?
 cmp -s backend/public/index.php "$H/vitalcare-private/app/public/index.php"; check "the front controller is copied" $?
 [ -f "$H/vitalcare-private/app/migrations/001-users.sql" ] && [ -f "$H/vitalcare-private/app/bin/migrate.php" ] && [ -f "$H/vitalcare-private/app/bin/backup.sh" ]; check "migrations and CLI tools are copied" $?
 [ ! -e "$H/vitalcare-private/app/tests" ] && [ -z "$(find "$H/vitalcare-private/app" -name '*.test.*')" ]; check "tests are not deployed" $?

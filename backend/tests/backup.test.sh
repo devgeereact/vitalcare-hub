@@ -33,10 +33,10 @@ export VITALCARE_PRIVATE_ROOT="$PRIV" VITALCARE_BACKUP_ROOT="$BK" VITALCARE_DB="
 SQL -e "DROP DATABASE IF EXISTS $DB; CREATE DATABASE $DB CHARACTER SET utf8mb4; DROP DATABASE IF EXISTS $SCRATCH; CREATE DATABASE $SCRATCH CHARACTER SET utf8mb4" || { echo "test database not reachable: run scripts/test-db.sh up"; exit 2; }
 ROOT_DIR="$ROOT_DIR" PORT="$PORT" DB="$DB" HOSTU="$HOSTU" HOSTP="$HOSTP" php -r '
 require getenv("ROOT_DIR")."/backend/src/Autoload.php";
-$pdo = Vitalcare\Db::connect(["dsn"=>"mysql:host=127.0.0.1;port=".getenv("PORT").";dbname=".getenv("DB").";charset=utf8mb4","user"=>getenv("HOSTU"),"password"=>getenv("HOSTP")]);
-(new Vitalcare\Migrator($pdo, getenv("ROOT_DIR")."/backend/migrations"))->run();
-$pdo->prepare("INSERT INTO users (id,email,display_name,role) VALUES (?,?,?,?)")->execute([Vitalcare\Db::uuid(),"backup.test@example.test","Backup Test","learner"]);
-$pdo->prepare("INSERT INTO enquiries (id,name,email,message) VALUES (?,?,?,?)")->execute([Vitalcare\Db::uuid(),"A","a@example.test","hello hello hello"]);
+$pdo = Vitalcare\Support\Db::connect(["dsn"=>"mysql:host=127.0.0.1;port=".getenv("PORT").";dbname=".getenv("DB").";charset=utf8mb4","user"=>getenv("HOSTU"),"password"=>getenv("HOSTP")]);
+(new Vitalcare\Support\Migrator($pdo, getenv("ROOT_DIR")."/backend/migrations"))->run();
+$pdo->prepare("INSERT INTO users (id,email,display_name,role) VALUES (?,?,?,?)")->execute([Vitalcare\Support\Db::uuid(),"backup.test@example.test","Backup Test","learner"]);
+$pdo->prepare("INSERT INTO enquiries (id,name,email,message) VALUES (?,?,?,?)")->execute([Vitalcare\Support\Db::uuid(),"A","a@example.test","hello hello hello"]);
 ' || { echo "could not prepare the test database"; exit 2; }
 TABLES="$(SQL -N -B -e "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='$DB' AND TABLE_TYPE='BASE TABLE'")"
 

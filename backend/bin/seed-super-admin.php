@@ -10,7 +10,10 @@ if (PHP_SAPI !== 'cli') {
 }
 require_once __DIR__ . '/../src/Bootstrap.php';
 
-use Vitalcare\{Config, Db, Role, SessionResolver};
+use Vitalcare\Support\Config;
+use Vitalcare\Support\Db;
+use Vitalcare\Auth\Role;
+use Vitalcare\Auth\SessionResolver;
 
 $email = SessionResolver::normaliseEmail($argv[1] ?? null);
 if ($email === null) {
@@ -27,5 +30,5 @@ if ($exists->fetchColumn() !== false) {
     exit(3);
 }
 $pdo->prepare('INSERT INTO users (id, email, display_name, role) VALUES (:id, :e, :n, :r)')
-    ->execute([':id' => Vitalcare\Db::uuid(), ':e' => $email, ':n' => $name, ':r' => Role::SUPER_ADMIN]);
+    ->execute([':id' => Vitalcare\Support\Db::uuid(), ':e' => $email, ':n' => $name, ':r' => Role::SUPER_ADMIN]);
 echo "Created super_admin row for the given email. It links on first sign-in.\n";

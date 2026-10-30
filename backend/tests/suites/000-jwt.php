@@ -3,7 +3,8 @@
 declare(strict_types=1);
 
 // Clerk token verification (ported from the proven siterelay check, plus attacks written for this project).
-use Vitalcare\{HttpError, Jwt};
+use Vitalcare\Http\HttpError;
+use Vitalcare\Auth\Jwt;
 
 const ISS = 'https://clerk.vitalcare.uk';
 const AZP = 'https://vitalcare.uk';
@@ -82,7 +83,7 @@ $bad('alg none', b64u(json_encode(['alg' => 'none', 'kid' => 'kid-1'])) . '.' . 
 $bad('alg HS256 using the public key as secret', (function () use ($jwk, $now) {
     $h = b64u(json_encode(['alg' => 'HS256', 'typ' => 'JWT', 'kid' => 'kid-1']));
     $p = b64u(json_encode(good_claims($now)));
-    return "$h.$p." . b64u(hash_hmac('sha256', "$h.$p", Vitalcare\Jwt::jwkToPem($jwk), true));
+    return "$h.$p." . b64u(hash_hmac('sha256', "$h.$p", Vitalcare\Auth\Jwt::jwkToPem($jwk), true));
 })());
 $bad('alg RS512 header', sign_token(['alg' => 'RS512', 'kid' => 'kid-1'], good_claims($now), $key));
 $bad('missing kid', sign_token(['alg' => 'RS256'], good_claims($now), $key));

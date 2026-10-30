@@ -3,7 +3,10 @@
 declare(strict_types=1);
 
 // Public certificate verification: three outcomes, no leaks, no enumeration.
-use Vitalcare\{Api, CertificateCode, CertificateVerifier, HttpError};
+use Vitalcare\Http\Api;
+use Vitalcare\Certificates\CertificateCode;
+use Vitalcare\Certificates\CertificateVerifier;
+use Vitalcare\Http\HttpError;
 
 /** @var PDO $pdo */
 $learner = make_user($pdo, 'learner@example.com', 'learner');
@@ -16,7 +19,7 @@ function cert(PDO $pdo, string $learner, string $approver, array $o = []): strin
     $pdo->prepare('INSERT INTO certificates (id, code, learner_id, learner_name, course_title, course_hours, completed_on, expires_on, status, approved_at, approved_by)
                    VALUES (?,?,?,?,?,?,?,?,?,?,?)')
         ->execute([
-            Vitalcare\Db::uuid(), $code, $learner, $o['name'] ?? 'Lee Learner', $o['title'] ?? 'Basic Life Support',
+            Vitalcare\Support\Db::uuid(), $code, $learner, $o['name'] ?? 'Lee Learner', $o['title'] ?? 'Basic Life Support',
             array_key_exists('hours', $o) ? $o['hours'] : 3.5, $o['completed'] ?? '2026-01-10', $o['expires'] ?? null, $status,
             $status === 'approved' ? '2026-01-11 09:00:00' : null, $status === 'approved' ? $approver : null,
         ]);
@@ -85,10 +88,10 @@ check('a withdrawn certificate carries no learner name anywhere in the answer', 
 $fails = function (string $label, callable $fn) {
     try { $fn(); check($label, false, 'no exception'); } catch (PDOException) { check($label, true); }
 };
-$fails('an approved certificate must record who approved it', fn () => $pdo->prepare("INSERT INTO certificates (id, code, learner_id, learner_name, course_title, completed_on, status) VALUES (?,?,?,?,?,?, 'approved')")->execute([Vitalcare\Db::uuid(), 'BADAPPROVEDX', $learner, 'X', 'Y', '2026-01-01']));
+$fails('an approved certificate must record who approved it', fn () => $pdo->prepare("INSERT INTO certificates (id, code, learner_id, learner_name, course_title, completed_on, status) VALUES (?,?,?,?,?,?, 'approved')")->execute([Vitalcare\Support\Db::uuid(), 'BADAPPROVEDX', $learner, 'X', 'Y', '2026-01-01']));
 $fails('expiry cannot precede completion', fn () => cert($pdo, $learner, $approver, ['expires' => '2025-01-01']));
 $fails('a code is unique', fn () => cert($pdo, $learner, $approver, ['code' => $noExpiry]));
-$fails('a status outside draft/approved/withdrawn is refused', fn () => $pdo->prepare("INSERT INTO certificates (id, code, learner_id, learner_name, course_title, completed_on, status) VALUES (?,?,?,?,?,?, 'issued')")->execute([Vitalcare\Db::uuid(), 'BADSTATUSAAA', $learner, 'X', 'Y', '2026-01-01']));
+$fails('a status outside draft/approved/withdrawn is refused', fn () => $pdo->prepare("INSERT INTO certificates (id, code, learner_id, learner_name, course_title, completed_on, status) VALUES (?,?,?,?,?,?, 'issued')")->execute([Vitalcare\Support\Db::uuid(), 'BADSTATUSAAA', $learner, 'X', 'Y', '2026-01-01']));
 
 // ---- the endpoint ----
 $now = new DateTimeImmutable('2026-10-30 12:00:00', new DateTimeZone('UTC'));

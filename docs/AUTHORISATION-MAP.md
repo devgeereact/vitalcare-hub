@@ -13,7 +13,7 @@ Status: PLANNED. Generated from a static replay of the 95 source migrations (`sc
 
 ## Verified so far
 
-The predicates every row is built from exist in `backend/src/Authz.php` and are tested in `backend/tests/suites/020-authz.php` (82 assertions: the role matrix, fail-closed for nobody, inactive users and retired or unknown roles, `canReadPerson`, `sameOrg`, `staffFor` under D-010). Identity resolution is tested in `010-session-resolver.php`. **No row of the table below is DONE yet**: each becomes DONE when its own test passes in its slice.
+The predicates every row is built from exist in `backend/src/Auth/Authz.php` and are tested in `backend/tests/suites/020-authz.php` (82 assertions: the role matrix, fail-closed for nobody, inactive users and retired or unknown roles, `canReadPerson`, `sameOrg`, `staffFor` under D-010). Identity resolution is tested in `010-session-resolver.php`. **No row of the table below is DONE yet**: each becomes DONE when its own test passes in its slice.
 
 ## Counts
 

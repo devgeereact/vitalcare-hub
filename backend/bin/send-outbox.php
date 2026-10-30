@@ -10,7 +10,10 @@ if (PHP_SAPI !== 'cli') {
 }
 require_once __DIR__ . '/../src/Bootstrap.php';
 
-use Vitalcare\{Config, Db, OutboxSender, SmtpMailer};
+use Vitalcare\Support\Config;
+use Vitalcare\Support\Db;
+use Vitalcare\Mail\OutboxSender;
+use Vitalcare\Mail\SmtpMailer;
 
 $root = getenv('VITALCARE_PRIVATE_ROOT') ?: (getenv('HOME') ?: '') . '/vitalcare-private';
 $c = Config::load($root, getenv('VITALCARE_CONFIG') ?: 'prod');

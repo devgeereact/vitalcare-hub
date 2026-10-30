@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 // The users table enforces what the code assumes, and the migration runner keeps its promises.
-use Vitalcare\Migrator;
+use Vitalcare\Support\Migrator;
 
 /** @var PDO $pdo */
 $fails = function (string $label, callable $fn) {
@@ -25,15 +25,15 @@ $fails('a Clerk id can belong to only one user', fn () => make_user($pdo, 'three
 make_user($pdo, 'four@example.com', 'learner');
 make_user($pdo, 'five@example.com', 'learner');
 check('many users may have no Clerk id yet', (int) $pdo->query('SELECT COUNT(*) FROM users WHERE clerk_user_id IS NULL')->fetchColumn() >= 3);
-$fails('a user cannot point at a missing organisation', fn () => make_user($pdo, 'six@example.com', 'manager', Vitalcare\Db::uuid()));
+$fails('a user cannot point at a missing organisation', fn () => make_user($pdo, 'six@example.com', 'manager', Vitalcare\Support\Db::uuid()));
 $pdo->exec("UPDATE users SET display_name = 'Changed' WHERE email = 'one@example.com'");
 $u = $pdo->query("SELECT created_at, updated_at FROM users WHERE email = 'one@example.com'")->fetch();
 check('timestamps are stored', $u['created_at'] !== null && $u['updated_at'] !== null);
 check('a fresh migration creates no users: only the four this test inserted exist', (int) $pdo->query('SELECT COUNT(*) FROM users')->fetchColumn() === 4);
 
 // UUIDv7 ids: right version, variant, ordered by time.
-$a = Vitalcare\Db::uuid(1_000);
-$b = Vitalcare\Db::uuid(2_000);
+$a = Vitalcare\Support\Db::uuid(1_000);
+$b = Vitalcare\Support\Db::uuid(2_000);
 check('uuid is version 7', $a[14] === '7' && in_array($a[19], ['8', '9', 'a', 'b'], true), $a);
 check('uuid is time ordered', strcmp($a, $b) < 0);
 check('uuid has the 8-4-4-4-12 shape', preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/', $a) === 1);

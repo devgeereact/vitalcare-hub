@@ -7,7 +7,8 @@ declare(strict_types=1);
 // and its name must start with "vitalcare_test".
 require_once __DIR__ . '/../src/Autoload.php';
 
-use Vitalcare\{HttpError, Migrator};
+use Vitalcare\Http\HttpError;
+use Vitalcare\Support\Migrator;
 
 $host = getenv('TEST_DB_HOST') ?: '127.0.0.1';
 $port = getenv('TEST_DB_PORT') ?: '33175';
@@ -50,7 +51,7 @@ function fresh_db(): PDO
     $raw = new PDO("mysql:host=$host;port=$port;charset=utf8mb4", $user, $pass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
     $raw->exec("DROP DATABASE IF EXISTS `$name`");
     $raw->exec("CREATE DATABASE `$name` CHARACTER SET utf8mb4");
-    $pdo = Vitalcare\Db::connect(['dsn' => "mysql:host=$host;port=$port;dbname=$name;charset=utf8mb4", 'user' => $user, 'password' => $pass]);
+    $pdo = Vitalcare\Support\Db::connect(['dsn' => "mysql:host=$host;port=$port;dbname=$name;charset=utf8mb4", 'user' => $user, 'password' => $pass]);
     (new Migrator($pdo, __DIR__ . '/../migrations'))->run();
     return $pdo;
 }
@@ -58,7 +59,7 @@ function fresh_db(): PDO
 /** Inserts a user row and returns its id. */
 function make_user(PDO $pdo, string $email, string $role, ?string $org = null, ?string $clerk = null, string $status = 'active'): string
 {
-    $id = Vitalcare\Db::uuid();
+    $id = Vitalcare\Support\Db::uuid();
     $pdo->prepare('INSERT INTO users (id, email, display_name, role, organisation_id, clerk_user_id, status) VALUES (?,?,?,?,?,?,?)')
         ->execute([$id, $email, 'Test ' . $role, $role, $org, $clerk, $status]);
     return $id;
@@ -66,7 +67,7 @@ function make_user(PDO $pdo, string $email, string $role, ?string $org = null, ?
 
 function make_org(PDO $pdo, string $name): string
 {
-    $id = Vitalcare\Db::uuid();
+    $id = Vitalcare\Support\Db::uuid();
     $pdo->prepare('INSERT INTO organisations (id, name) VALUES (?,?)')->execute([$id, $name]);
     return $id;
 }
