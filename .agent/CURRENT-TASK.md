@@ -63,3 +63,4 @@ Check `git status` and `git log -3` before trusting this snapshot (the folder ma
 Next task: slice 1 front end (sign-in with Clerk email code, who-am-I page), then slice 2. Acceptance: pnpm check green, 375 px layout checked, unknown email shows a no-access screen.
 Pending approvals: E1 to E18 in docs/FOUNDATION-PLAN.md, D-006 to D-012. No deploy or deletion is implied by this handoff.
 ```
+- 30 Oct 2026: `docs/AUDIT.md` started (one audit file).
