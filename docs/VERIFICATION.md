@@ -28,6 +28,15 @@ What has actually been run and seen. Anything not listed is NOT TESTED.
 | Built `dist/` audit | no host other than documentation links; no trace of the earlier template or systems; 1.1 MB; the four logo files are byte-identical to the supplied ones (SHA-256 compared) |
 | PWA icons | regenerated from the supplied round logo by `scripts/make-icons.sh`; the starter's placeholder icons are gone |
 
+## local-live and the secrets (30 Oct 2026, after the owner said "done")
+
+| Check | Evidence |
+|---|---|
+| Server config after "done" | `turnstile.secret` NOT set and `smtp.password` NOT set (no new config backup was made, so nothing reached the server); the rest intact. The hosts entry for `local.vitalcare.uk` exists, so `local-live setup` did work |
+| local-live | started by me; `https://local.vitalcare.uk/` returns 200; `/api/health` through it reports PHP 8.4.27 and `authConfigured: true` |
+| Sign-in page on that origin | Chrome: Clerk loaded (`Clerk.loaded` true), the form shows "Send code", no console errors. No email address was entered (that would send the owner a code). A real sign-in is still NOT TESTED |
+| Contact page on that origin | the form renders and Turnstile's script loaded; the submit button became enabled, which means the new widget issued a token on `local.vitalcare.uk`. Submitting is NOT TESTED: the server has no Turnstile secret, so the API answers 503 by design |
+
 ## Mail, config, clean-up and CI (30 Oct 2026)
 
 | Check | Evidence |

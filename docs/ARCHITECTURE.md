@@ -74,6 +74,8 @@ To be set in `.htaccess` and checked in a real browser during R1. It must name t
 
 `default-src 'self'; script-src 'self' https://clerk.vitalcare.uk https://cdn.protect.clerk.com https://challenges.cloudflare.com; connect-src 'self' https://clerk.vitalcare.uk https://clerk-telemetry.com; img-src 'self' data: https://img.clerk.com; frame-src https://challenges.cloudflare.com https://clerk.vitalcare.uk; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'`
 
+**Observed on 30 Oct 2026** (Chrome, the sign-in page on the local-live origin): besides `clerk.vitalcare.uk`, Clerk's bot protection contacts `cdn.protect.clerk.com` and a per-session host of the form `<id>.client.protect.clerk.com`, on ports 443, 8443, 18443, 2082 and 992. The final `connect-src` must therefore allow `https://*.client.protect.clerk.com` and those ports, or sign-in can fail under the CSP; confirm by testing in a browser with the CSP on, before launch. Cloudflare Turnstile loads from `challenges.cloudflare.com` as listed.
+
 Fonts are self-hosted so no font CDN is listed. Any additional host Clerk needs (for example its accounts portal) is added only after the browser console shows the violation.
 
 ## `.htaccess` and routing
