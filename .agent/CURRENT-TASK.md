@@ -28,12 +28,17 @@
 
 ## External changes made
 - **E1 (approved: "go ahead with recomended")**, 30 Oct 2026: created private GitHub repo `devgeereact/vitalcare-hub`; switched Actions OFF for it (new repos default to ON); pushed `main` (3 commits, head `fda4bd1`). No other external change.
+- **E5 (approved: "Yes")**, 30 Oct 2026: copied `~/vitalcare.uk` to `~/vitalcare-backups/pre-release-20261030-121438/files/` (16 files, SHA-256 identical, manifest saved). One scratch file I created in the server home during the dry run (`~/.vc_e5_target_tmp`) was removed in the same step.
+- **E3 (approved: "yes")**: repository variable `VITE_CLERK_PUBLISHABLE_KEY` set (public key).
+- **E2 (approved: "yes")**: Actions enabled on `devgeereact/vitalcare-hub`. **Effect: BLOCKED**, GitHub will not start jobs (payment or spending-limit message). Dependabot opened one PR (TypeScript 6 to 7, a major): left open, not merged.
+- **Push (approved: "push")**: `main` now at `6dcbf5a`.
 - Read-only reads: ( SSH reads of the three Vitalcare folders, cPanel API listings, Clerk config read, Cloudflare zone read, Companies House read.)
 
 ## Unpushed
-Local commits after `fda4bd1` are not pushed: every push needs the owner's go.
+Only this record is local; every push needs the owner's go (and any push now only produces a failed Actions job until billing is fixed).
 
 ## Blockers
+- **GitHub Actions billing**: jobs do not start ("recent account payments have failed or your spending limit needs to be increased"). Only the owner can fix it (costs money, account settings). Until then the gate is `pnpm check` run locally, and Semgrep is NOT RUN.
 - Owner decisions D-006 to D-012 in `docs/DECISIONS.md`, especially D-010 (tenant model) before slice 2.
 - Owner-supplied: SMTP mailbox/sender, Turnstile, Semgrep token, accreditation proof, Harni's consent, payment details and VAT, retention periods.
 - Web PHP version for the domain is UNKNOWN until `/api/health` runs.

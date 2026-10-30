@@ -22,6 +22,6 @@ release:
   auto_deploy: false
   last_release: null        # vX.Y.Z (sha)
 
-repo: devgeereact/vitalcare-hub (private; Actions OFF until E2)
+repo: devgeereact/vitalcare-hub (private; Actions enabled, jobs blocked by account billing)
 
 optional_services: []       # each needs an approved entry in docs/DECISIONS.md
