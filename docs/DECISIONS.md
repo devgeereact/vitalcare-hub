@@ -2,6 +2,17 @@
 
 One entry per significant choice. Newest first. "Approved" means the owner said so in the session on that date; "Proposed" needs an answer before the work that depends on it.
 
+## D-017: All deploys go through GitHub, over SFTP, behind a gate (2026-10-30)
+- **Status:** Approved by the owner ("make sure all deploy go through Github, using the Sftp"); the server-side install is a separate named step.
+- **Context:** Until now code reached the server from a laptop with `rsync` over a full-access SSH key (D-006's "no deploy job" was about Actions minutes; the repository is public, so minutes are free).
+- **Decision:** A manual workflow (`Deploy`, on `main` only) builds a release, waits for the owner's approval in the GitHub environment `production`, then uploads over SFTP. The deploy key is a **separate key** whose `authorized_keys` line is `restrict,command="<private root>/gate/deploy-gate.sh"`. The gate (`backend/bin/deploy-gate.sh`) accepts only (1) the SFTP subsystem, run with deletion, rename, link and attribute requests refused at protocol level, and (2) a short list of verbs taking a commit id. Verbs verify the upload, take a pinned backup before any migration, switch the code, check `/api/health` reports the new release, and roll the code back automatically if it does not.
+- **Why this shape:** a leaked or hijacked deploy key cannot open a shell, delete or rename anything, or read secrets; it can only upload files and run the gate. The gate is installed by the owner and is not updated by the pipeline it guards; `status` prints its checksum so a run can tell it is out of date.
+- **Residual risk (disclosed):** the account is shared hosting, and an SFTP key cannot be limited to one folder. A compromised key could overwrite files that belong to the other sites on the account, or fill the disk. The long-term answer is a hosting account of its own; until then the approval gate, the no-delete rule and key rotation are the controls.
+- **Rule kept:** nothing is mirror-deleted. Old hashed assets stay; code is synced without `--delete`; every activation leaves a rollback copy (the newest three are kept).
+- **ASSUMPTION:** the web PHP's opcache revalidates within the gate's 4-second settle delay. Checked on the first real deploy.
+- **Retires** (after the first real deploy is proven): `scripts/deploy-api.sh`, `scripts/deploy-rsync.sh` and their local-key use.
+- **Approved by:** owner, 2026-10-30
+
 ## D-016: Clean-up of retired items (2026-10-30)
 - **Status:** Approved by the owner ("you can delete what not needed")
 - **Rule I applied:** nothing is deleted until a backup of it exists, is verified, and (for data) has been restored somewhere isolated. Deletions were by exact path, from a list, with the result checked afterwards.

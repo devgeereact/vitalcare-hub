@@ -64,6 +64,12 @@ Contact-form messages are queued in `outbox_email`; `bin/send-outbox.php` sends 
 
 The verified dump of the previous application's database is in `~/vitalcare-backups/legacy/` (0700), with a copy on the owner's Mac. To restore it into a scratch database, remove the `DEFINER=` clauses on the way in: `gzip -dc db.sql.gz | sed -E 's/DEFINER=`[^`]*`@`[^`]*`//g' | mariadb <scratch>`.
 
+## Deploying
+
+Everything goes through the `Deploy` workflow on GitHub (see `docs/DEPLOYMENT.md` and D-017). Never copy files to the server by hand. On the server, `~/vitalcare-private/logs/deploy.log` records every verb and result (never a credential), `~/vitalcare-private/rollback/` holds the newest three rollback copies of each kind, and `~/vitalcare-private/releases/` holds the newest five staged releases.
+
+If a deploy fails: read the failed step in the Actions run first. The gate says exactly what it refused. If the API is unhealthy after a switch the gate has already restored the previous code; confirm with `/api/health`.
+
 ## Rollback
 
 See `docs/DEPLOYMENT.md` (site files, `.htaccess`) and the restore steps above (database).
