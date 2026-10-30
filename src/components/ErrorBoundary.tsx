@@ -12,7 +12,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(_error: Error, _info: ErrorInfo): void {
-    // e.g. report to Sentry once the owner approves it — never include user data or tokens.
+    // Add approved, redacted error reporting here. Never include user data or tokens.
   }
 
   render() {

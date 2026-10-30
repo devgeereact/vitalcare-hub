@@ -1,7 +1,7 @@
 # Current task
 
 **Goal:** Plans approved (decisions D-006, D-008, D-010 to D-012 approved 30 Oct 2026). Slice 1 (identity and authorisation core) built locally. No external change made; every E-item in `docs/FOUNDATION-PLAN.md` still needs its own named go.
-**Phase:** 05 Build (local only) · **Slice:** 1
+**Phase:** 05 Build (local only) · **Slice:** 1 (done locally) and 2 (started)
 **Status:** PARTIAL
 
 ## Changed this session (all inside this folder, plus one kit file)
@@ -12,10 +12,13 @@
 - Outside this folder: one row added to `~/Developer/build-kit/App-Kit/PORTS.md` (approved).
 - Source project untouched.
 
+- Front end: Clinical Ledger tokens, self-hosted DM Sans/DM Serif Display (`@fontsource`), supplied logos (SHA-256 identical), PWA icons regenerated from the round logo, shell (skip link, header, footer with the Ltd line), Home, Sign in (Clerk email code), Account, Not found. Claim register enforced at compile time (`scripts/claims.mjs`, `src/generated/claims.ts`) plus `scripts/check-copy.mjs`. Dependencies added: `@clerk/react`, `react-router-dom`, fontsource fonts; dev: `yaml`, jsdom, Testing Library.
+
 ## Checks run
 | Command / check | Result |
 |---|---|
-| `pnpm check` (format, lint, typecheck, 12 frontend tests, PHP lint, 184 PHP assertions, build) | PASS, exit 0, seen 30 Oct 2026 |
+| `pnpm check` (content checks, lint, typecheck, 45 frontend tests, PHP lint, 184 PHP assertions, build) | PASS, exit 0, seen 30 Oct 2026 |
+| Browser check at 375 px (framed), fonts, external requests | PASS: no overflow, 0 external requests; sign-in form appearance NOT TESTED (needs a Clerk key) |
 | Mutation checks (azp, algorithm, relink, manager-as-staff) | each caught by the tests, originals restored |
 | HTTP smoke of `/api/*` with `php -S` | PASS (unconfigured mode) |
 | `gitleaks dir` on docs, src, backend, scripts, public, .github, .agent | PASS: no leaks found (no git repo yet, so history not scanned) |
@@ -32,7 +35,7 @@ None. (Read-only: SSH reads of the three Vitalcare folders, cPanel API listings,
 - Web PHP version for the domain is UNKNOWN until `/api/health` runs.
 
 ## Next
-Finish slice 1 locally: the sign-in screen (Clerk email code) and a signed-in "who am I" page; slice 2 design tokens, self-hosted fonts and the claim-register build check. E1 to E18 wait for named approvals.
+Slice 2 public pages (course list and detail, standards, contact form, verify page) need the approved course facts and proof from the owner; until then build the contact form and verify page shells against the API. E1 to E18 wait for named approvals (owner replied "Go ahead" without naming one; asked again for E1 and E5 by name).
 
 ## Next-session prompt
 ```

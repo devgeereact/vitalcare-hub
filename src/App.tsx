@@ -1,30 +1,19 @@
-import { InstallButton } from "./components/InstallButton";
-import { UpdatePrompt } from "./components/UpdatePrompt";
-import { APP_DESCRIPTION, APP_NAME } from "./config";
-import { useOnlineStatus } from "./hooks/useOnlineStatus";
+import { Route, Routes } from "react-router-dom";
+import { Layout } from "./components/Layout";
+import { AccountPage } from "./pages/AccountPage";
+import { HomePage } from "./pages/HomePage";
+import { NotFoundPage } from "./pages/NotFoundPage";
+import { SignInPage } from "./pages/SignInPage";
 
 export function App() {
-  const online = useOnlineStatus();
-
   return (
-    <main>
-      <p className="eyebrow">Project starter · not a finished product</p>
-      <h1>{APP_NAME}</h1>
-      <p>{APP_DESCRIPTION}</p>
-
-      {!online && (
-        <p role="status">You are offline. The app shell works; data may be out of date.</p>
-      )}
-      <UpdatePrompt />
-      <InstallButton />
-
-      <section>
-        <h2>Your first vertical slice</h2>
-        <p>
-          Follow <code>docs/ROADMAP.md</code> and <code>.agent/CURRENT-TASK.md</code>. No fake
-          accounts, records or live data are included.
-        </p>
-      </section>
-    </main>
+    <Routes>
+      <Route element={<Layout />}>
+        <Route index element={<HomePage />} />
+        <Route path="sign-in" element={<SignInPage />} />
+        <Route path="app" element={<AccountPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
+    </Routes>
   );
 }

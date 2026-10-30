@@ -2,9 +2,8 @@
 /// <reference types="vite-plugin-pwa/react" />
 
 interface ImportMetaEnv {
-  /** Public. Root of the API, e.g. "/api". */
   readonly VITE_API_BASE_URL?: string;
-  /** Public by design (Clerk publishable key). Never a secret key. */
+  /** Public Clerk publishable key (pk_...). */
   readonly VITE_CLERK_PUBLISHABLE_KEY?: string;
 }
 

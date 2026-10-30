@@ -10,14 +10,19 @@ export function UpdatePrompt() {
   if (!needRefresh) return null;
 
   return (
-    <section role="status">
-      <p>A new version is available. Save your work, then reload.</p>
-      <button type="button" onClick={() => void updateServiceWorker(true)}>
-        Reload now
-      </button>
-      <button type="button" onClick={() => setNeedRefresh(false)}>
-        Later
-      </button>
-    </section>
+    <div className="page-inner">
+      <div className="notice notice--info" role="status">
+        <strong>A new version is available</strong>
+        Save your work, then reload.
+        <div className="actions">
+          <button className="btn" type="button" onClick={() => void updateServiceWorker(true)}>
+            Reload now
+          </button>
+          <button className="btn btn--quiet" type="button" onClick={() => setNeedRefresh(false)}>
+            Later
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
