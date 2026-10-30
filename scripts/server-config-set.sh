@@ -28,8 +28,33 @@ if [ "$CMD" = "secret" ]; then
     IFS= read -r -s VALUE || true
     printf '\n' >&2
   fi
-  [ -n "$VALUE" ] || { echo "empty value; nothing changed" >&2; exit 64; }
-  JSON="$(KEY="$KEY" VALUE="$VALUE" python3 -c 'import json,os; print(json.dumps({"set": {os.environ["KEY"]: os.environ["VALUE"]}}))')"
+  # Clean up what a paste can smuggle in, then say WHY a value is unusable (by category and length only,
+  # never the value). Stripped: bracketed-paste markers, and whitespace or line ends around the value.
+  JSON="$(KEY="$KEY" VALUE="$VALUE" python3 - <<'PY'
+import json, os, re, sys
+v = os.environ["VALUE"]
+v = re.sub(r"\x1b\[20[01]~", "", v)          # bracketed-paste start and end markers
+v = v.strip(" \t\r\n")
+key = os.environ["KEY"]
+if v == "":
+    sys.stderr.write("Nothing was entered (or only spaces and line breaks). Nothing was sent.\n"); sys.exit(64)
+problems = []
+if len(v) < 8:
+    problems.append("it is only %d characters long (at least 8 are needed)" % len(v))
+if len(v) > 200:
+    problems.append("it is %d characters long (at most 200)" % len(v))
+spaces = v.count(" ")
+ctrl = sum(1 for c in v if ord(c) < 32 or ord(c) == 127)
+nonascii = sum(1 for c in v if ord(c) > 126)
+if spaces: problems.append("it contains %d space(s) inside it" % spaces)
+if ctrl: problems.append("it contains %d hidden control character(s)" % ctrl)
+if nonascii: problems.append("it contains %d non-ASCII character(s) (accents, curly quotes, emoji)" % nonascii)
+if problems:
+    sys.stderr.write("Not sent. For %s, %s. (%d characters after trimming; the value itself is never shown.)\n" % (key, "; and ".join(problems), len(v)))
+    sys.exit(65)
+print(json.dumps({"set": {key: v}}))
+PY
+)" || exit $?
   unset VALUE
 else
   JSON="$(python3 - "$@" <<'PY'

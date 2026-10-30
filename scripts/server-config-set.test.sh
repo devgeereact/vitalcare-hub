@@ -16,6 +16,24 @@ OUT="$(printf 'Pasted-Secret_Value-123' | bash scripts/server-config-set.sh secr
 echo "$OUT" | grep -q "Pasted-Secret"; [ $? -ne 0 ]; check "the secret is not in the output" $?
 echo "$OUT" | grep -q "secret, not shown"; check "the output says it was set without showing it" $?
 bash scripts/server-config-set.sh secret smtp.password </dev/null >/dev/null 2>&1; [ $? -ne 0 ]; check "no terminal and no --stdin is refused (it never reads a secret from an arg)" $?
+
+# Paste artefacts are cleaned, and an unusable value is explained without being echoed.
+printf 'Pasted-Secret_Value-123\r\n' | bash scripts/server-config-set.sh secret smtp.password --stdin >/dev/null 2>&1; rc=$?
+check "a trailing carriage return from a paste is removed and the value accepted" $rc
+[ "$(val smtp.password)" = "Pasted-Secret_Value-123" ]; check "...and what is stored has no carriage return" $?
+printf '\033[200~Bracketed-Paste_Value-1\033[201~\n' | bash scripts/server-config-set.sh secret turnstile.secret --stdin >/dev/null 2>&1
+[ "$(val turnstile.secret)" = "Bracketed-Paste_Value-1" ]; check "terminal bracketed-paste markers are removed" $?
+printf '   Spaces_Around_Value-9   \n' | bash scripts/server-config-set.sh secret smtp.password --stdin >/dev/null 2>&1
+[ "$(val smtp.password)" = "Spaces_Around_Value-9" ]; check "spaces around the value are trimmed" $?
+for bad in 'has a space inside' 'short' 'cafÃ©-with-accent-1' ; do
+  ERR="$(printf "$bad\n" | bash scripts/server-config-set.sh secret turnstile.secret --stdin 2>&1 >/dev/null)"; rc=$?
+  [ $rc -ne 0 ]; check "an unusable value is refused: $(printf "$bad" | wc -c | tr -d ' ') bytes" $?
+  echo "$ERR" | grep -q "Not sent"; check "...with a reason, before anything is sent" $?
+  echo "$ERR" | grep -qiE "has a space inside|caf|short"; [ $? -ne 0 ]; check "...and the reason never contains the value" $?
+done
+R1="$(printf 'has a space inside\n' | bash scripts/server-config-set.sh secret turnstile.secret --stdin 2>&1 || true)"; echo "$R1" | grep -q "space"; check "the reason for an inner space says so" $?
+R2="$(printf 'short\n' | bash scripts/server-config-set.sh secret turnstile.secret --stdin 2>&1 || true)"; echo "$R2" | grep -q "only 5 characters"; check "the reason for a short value gives its length" $?
+[ "$(val turnstile.secret)" = "Bracketed-Paste_Value-1" ]; check "a refused value leaves the stored one untouched" $?
 printf '' | bash scripts/server-config-set.sh secret turnstile.secret --stdin >/dev/null 2>&1; [ $? -ne 0 ]; check "an empty secret is refused" $?
 printf 'short' | bash scripts/server-config-set.sh secret turnstile.secret --stdin >/dev/null 2>&1; [ $? -ne 0 ]; check "a too-short secret is refused by the server-side tool" $?
 bash scripts/server-config-set.sh set db.password=hacked12345 >/dev/null 2>&1; [ $? -ne 0 ]; check "a key outside the allowlist is refused" $?
