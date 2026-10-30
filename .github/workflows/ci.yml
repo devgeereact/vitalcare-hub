@@ -7,6 +7,7 @@ on:
     paths-ignore: ["docs/**", "**/*.md", ".agent/**"]
   pull_request:
     paths-ignore: ["docs/**", "**/*.md", ".agent/**"]
+  workflow_dispatch:
 
 permissions:
   contents: read
