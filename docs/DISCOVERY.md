@@ -29,7 +29,7 @@ Status words: DONE (evidence) · PARTIAL · NOT TESTED · BLOCKED · PLANNED · 
 |---|---|---|
 | Source repo `devgeereact/Vitalcare-Training-Hub` | EXISTS, **public**, default branch `production`, many stale remote branches (dependabot ×11, dev, update/2026-10-08, chore/add-gsap-lenis) | `git remote -v`, `git branch -a` |
 | New private GitHub repo | NEW | Not created. `gh` is logged in as `devgeereact` (scopes repo, workflow). |
-| cPanel account `devgeereact` @ the shared cPanel host | EXISTS. **Shared with unrelated sites** (flightdeck, gakinz, egolimited, doyouknow and others). PHP CLI 8.4.27; extensions curl, fileinfo, gd, imagick, intl, mbstring, openssl, pdo_mysql, zip; **no `sodium`/`mysqli` listed** | SSH read-only |
+| cPanel account @ the shared cPanel host | EXISTS. **Shared with unrelated sites** (several other unrelated sites). PHP CLI 8.4.27; extensions curl, fileinfo, gd, imagick, intl, mbstring, openssl, pdo_mysql, zip; **no `sodium`/`mysqli` listed** | SSH read-only |
 | `~/vitalcare.uk` docroot (800 KB) | EXISTS. A **"Coming soon" holding page** (index.html 23 Oct), `sw.js`, `robots.txt`, `logos/`, six assets, an `api/uploads/course-media/banners/` stub and a stale `error_log` (July: `config.php` parse error). Every path returns 200 (SPA fallback); `/sitemap.xml` serves HTML though `robots.txt` points at it. | SSH + curl |
 | Live `.htaccess` | EXISTS. Top block = **Cloudflare origin lock** (403 unless `CF-RAY` header present, except `/.well-known/`), then SPA rewrite, cache headers, deny rules. No CSP header yet. Must be merged, never overwritten. | SSH read |
 | `~/vitalcare-cs-staging` | EXISTS. Copy of the same coming-soon page (704 KB), not wired to a domain I could see (UNKNOWN). | SSH |
