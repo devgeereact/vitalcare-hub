@@ -43,7 +43,10 @@ $dir = dirname(__DIR__) . '/../../.local-test/tmp/mig-' . bin2hex(random_bytes(4
 mkdir($dir, 0700, true);
 file_put_contents("$dir/001-first.sql", "CREATE TABLE t_one (id INT PRIMARY KEY);\n");
 $m = new Migrator($pdo, $dir);
+check('pending() lists a file that has not been applied', $m->pending() === ['001-first.sql']);
+check('pending() changes nothing (the table is not created by it)', (int) $pdo->query("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 't_one'")->fetchColumn() === 0);
 check('a new file is applied once', $m->run() === ['001-first.sql']);
+check('pending() is empty once everything is applied', $m->pending() === []);
 check('re-running applies nothing', $m->run() === []);
 file_put_contents("$dir/001-first.sql", "CREATE TABLE t_one (id INT PRIMARY KEY, extra INT);\n");
 try {
@@ -60,8 +63,15 @@ try {
 } catch (RuntimeException $e) {
     check('an un-numbered file name is refused', str_contains($e->getMessage(), 'not numbered'));
 }
+try {
+    $m->pending();
+    check('pending() also refuses an un-numbered file name', false);
+} catch (RuntimeException $e) {
+    check('pending() also refuses an un-numbered file name', str_contains($e->getMessage(), 'not numbered'));
+}
 unlink("$dir/bad name.sql");
 file_put_contents("$dir/002-second.sql", "-- a comment; with a semicolon\nCREATE TABLE t_two (id INT PRIMARY KEY);\nINSERT INTO t_two VALUES (1);\n");
+check('pending() sees the new file, and edits to an applied one are still refused by pending()', $m->pending() === ['002-second.sql']);
 check('files apply in order and comments with semicolons are safe', $m->run() === ['002-second.sql']);
 check('statements split correctly', (int) $pdo->query('SELECT COUNT(*) FROM t_two')->fetchColumn() === 1);
 $recorded = (int) $pdo->query("SELECT COUNT(*) FROM schema_migrations WHERE name IN ('001-first.sql','002-second.sql','001-users.sql')")->fetchColumn();

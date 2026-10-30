@@ -15,29 +15,40 @@ final class Migrator
     {
     }
 
+    /**
+     * Names of the migration files that have not been applied yet, in order. Changes nothing, apart from
+     * creating the bookkeeping table if it is missing. Refuses an edited applied file, like run().
+     *
+     * @return list<string>
+     */
+    public function pending(): array
+    {
+        $this->ensureTable();
+        $done = $this->applied();
+        $pending = [];
+        foreach ($this->files() as $file) {
+            $name = basename($file);
+            $hash = hash('sha256', (string) file_get_contents($file));
+            if (isset($done[$name])) {
+                if ($done[$name] !== $hash) {
+                    throw new \RuntimeException("Applied migration was edited: $name");
+                }
+                continue;
+            }
+            $pending[] = $name;
+        }
+        return $pending;
+    }
+
     /** @return list<string> names applied in this run */
     public function run(): array
     {
-        $this->pdo->exec(
-            'CREATE TABLE IF NOT EXISTS schema_migrations (
-               name VARCHAR(190) NOT NULL PRIMARY KEY,
-               sha256 CHAR(64) NOT NULL,
-               applied_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
-             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
-        );
-        $done = [];
-        foreach ($this->pdo->query('SELECT name, sha256 FROM schema_migrations') ?: [] as $r) {
-            $done[(string) $r['name']] = (string) $r['sha256'];
-        }
-
-        $files = glob(rtrim($this->dir, '/') . '/*.sql') ?: [];
-        sort($files);
+        $this->ensureTable();
+        $done = $this->applied();
+        $files = $this->files();
         $applied = [];
         foreach ($files as $file) {
             $name = basename($file);
-            if (preg_match('/^\d{3,}[-_][a-z0-9_-]+\.sql$/', $name) !== 1) {
-                throw new \RuntimeException("Migration file name is not numbered: $name");
-            }
             $sql = (string) file_get_contents($file);
             $hash = hash('sha256', $sql);
             if (isset($done[$name])) {
@@ -54,6 +65,41 @@ final class Migrator
             $applied[] = $name;
         }
         return $applied;
+    }
+
+
+    private function ensureTable(): void
+    {
+        $this->pdo->exec(
+            'CREATE TABLE IF NOT EXISTS schema_migrations (
+               name VARCHAR(190) NOT NULL PRIMARY KEY,
+               sha256 CHAR(64) NOT NULL,
+               applied_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
+             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
+        );
+    }
+
+    /** @return array<string,string> name => sha256 */
+    private function applied(): array
+    {
+        $done = [];
+        foreach ($this->pdo->query('SELECT name, sha256 FROM schema_migrations') ?: [] as $r) {
+            $done[(string) $r['name']] = (string) $r['sha256'];
+        }
+        return $done;
+    }
+
+    /** @return list<string> */
+    private function files(): array
+    {
+        $files = glob(rtrim($this->dir, '/') . '/*.sql') ?: [];
+        sort($files);
+        foreach ($files as $file) {
+            if (preg_match('/^\d{3,}[-_][a-z0-9_-]+\.sql$/', basename($file)) !== 1) {
+                throw new \RuntimeException('Migration file name is not numbered: ' . basename($file));
+            }
+        }
+        return $files;
     }
 
     /** @return list<string> */
