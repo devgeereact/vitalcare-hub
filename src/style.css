@@ -155,11 +155,13 @@ a:hover {
 
 .nav {
   display: flex;
-  gap: var(--space-4);
+  flex-wrap: wrap;
+  gap: 0 var(--space-4);
   align-items: center;
 }
 
 .nav a {
+  white-space: nowrap;
   padding: var(--space-2) 0;
   text-decoration: none;
   font-weight: 500;
@@ -236,6 +238,31 @@ a:hover {
   min-height: 2.75rem;
 }
 
+.input--error {
+  border-color: var(--danger-ink);
+  border-width: 2px;
+}
+
+.field-error {
+  color: var(--danger-ink);
+  font-weight: 500;
+  margin: var(--space-1) 0 0;
+}
+
+textarea.input {
+  max-width: 40rem;
+  min-height: 9rem;
+  resize: vertical;
+}
+
+.hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -294,6 +321,18 @@ a:hover {
   border-color: var(--danger-ink);
   background: var(--danger-bg);
   color: var(--danger-ink);
+}
+
+.notice--ok {
+  border-color: var(--success-ink);
+  background: var(--success-bg);
+  color: var(--success-ink);
+}
+
+.notice--warn {
+  border-color: var(--warning-ink);
+  background: var(--warning-bg);
+  color: var(--warning-ink);
 }
 
 .notice--info {

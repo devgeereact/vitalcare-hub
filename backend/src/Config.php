@@ -15,7 +15,9 @@ final class Config
      * @return array{
      *   db: array{dsn:string,user:string,password:string},
      *   migrate: array{dsn:string,user:string,password:string},
-     *   clerk: array{issuer:string,authorized_parties:list<string>}
+     *   clerk: array{issuer:string,authorized_parties:list<string>},
+     *   office_email: string,
+     *   turnstile: array{secret:string,dev_bypass:bool}
      * }
      */
     public static function load(string $privateRoot, string $name = 'prod'): array
@@ -52,6 +54,19 @@ final class Config
             }
         }
         $c['migrate'] = isset($c['migrate']) && is_array($c['migrate']) ? $c['migrate'] : $c['db'];
+
+        $office = $c['office_email'] ?? 'info@vitalcare.uk';
+        if (!is_string($office) || SessionResolver::normaliseEmail($office) === null) {
+            throw new \RuntimeException('Configuration office_email must be a valid email address');
+        }
+        $c['office_email'] = $office;
+
+        $t = isset($c['turnstile']) && is_array($c['turnstile']) ? $c['turnstile'] : [];
+        $c['turnstile'] = [
+            'secret' => is_string($t['secret'] ?? null) ? $t['secret'] : '',
+            // Local development only. A production config must never set this.
+            'dev_bypass' => ($t['dev_bypass'] ?? false) === true,
+        ];
         return $c;
     }
 }

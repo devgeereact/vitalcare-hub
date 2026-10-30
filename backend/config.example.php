@@ -15,6 +15,11 @@ return [
         'user' => 'MIGRATION_USER',
         'password' => 'SET_ON_THE_SERVER',
     ],
+    // Where contact-form enquiries are queued for.
+    'office_email' => 'info@vitalcare.uk',
+    // Cloudflare Turnstile secret key. Without it the contact form answers 503 (fails closed).
+    // 'dev_bypass' skips the check for LOCAL development only; never set it in production.
+    'turnstile' => ['secret' => 'SET_ON_THE_SERVER', 'dev_bypass' => false],
     'clerk' => [
         'issuer' => 'https://clerk.vitalcare.uk',
         'authorized_parties' => ['https://vitalcare.uk', 'https://local.vitalcare.uk'],

@@ -14,6 +14,8 @@
 
 - Front end: Clinical Ledger tokens, self-hosted DM Sans/DM Serif Display (`@fontsource`), supplied logos (SHA-256 identical), PWA icons regenerated from the round logo, shell (skip link, header, footer with the Ltd line), Home, Sign in (Clerk email code), Account, Not found. Claim register enforced at compile time (`scripts/claims.mjs`, `src/generated/claims.ts`) plus `scripts/check-copy.mjs`. Dependencies added: `@clerk/react`, `react-router-dom`, fontsource fonts; dev: `yaml`, jsdom, Testing Library.
 
+- Verify, rate limiting and contact: migrations 002 to 004; `CertificateCode`, `CertificateVerifier`, `RateLimiter`, `Turnstile`, `ContactService`; routes `GET /api/verify/{code}` and `POST /api/contact`; `/verify`, `/verify/:code` and `/contact` pages; Turnstile widget; suites 050, 060, 070.
+
 ## Checks run
 | Command / check | Result |
 |---|---|

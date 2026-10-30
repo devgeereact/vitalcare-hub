@@ -21,7 +21,19 @@ final class Bootstrap
         }
         $cache = rtrim($privateRoot, '/') . '/tmp';
         $jwt = new Jwt($c['clerk']['issuer'], $c['clerk']['authorized_parties'], $cache, self::fetch(...));
-        return new Api(static fn (string $t): array => $jwt->verify($t), $pdo);
+        $secret = $c['turnstile']['secret'];
+        $turnstile = $secret !== ''
+            ? static fn (string $token, ?string $ip): bool => Turnstile::verify($secret, $token, $ip, Turnstile::httpPost(...))
+            : null;
+        return new Api(
+            static fn (string $t): array => $jwt->verify($t),
+            $pdo,
+            PHP_VERSION,
+            true,
+            $turnstile,
+            $c['turnstile']['dev_bypass'],
+            $c['office_email'],
+        );
     }
 
     private static function fetch(string $url): string

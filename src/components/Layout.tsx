@@ -25,6 +25,8 @@ export function Layout() {
             <NavLink to="/" end>
               Home
             </NavLink>
+            <NavLink to="/verify">Check a certificate</NavLink>
+            <NavLink to="/contact">Contact</NavLink>
             {status === "signed-in" ? (
               <NavLink to="/app">Your account</NavLink>
             ) : (

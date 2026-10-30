@@ -9,3 +9,6 @@ export const API_BASE: string = import.meta.env.VITE_API_BASE_URL || "/api";
 
 /** Clerk publishable key. Public by design (a pk_ value); never the secret key. */
 export const CLERK_PUBLISHABLE_KEY: string = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "";
+
+/** Cloudflare Turnstile site key. Public by design; the secret key lives only in the server config. */
+export const TURNSTILE_SITE_KEY: string = import.meta.env.VITE_TURNSTILE_SITE_KEY || "";

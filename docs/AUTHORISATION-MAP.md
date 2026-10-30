@@ -218,6 +218,6 @@ Source buckets: `course-media` (public), `files` (private), `certificate-signatu
 | submit_assessment_attempt (093) | Grading is server-side, attempts are capped | `AssessmentService::submit` | `AssessmentServiceTest::gradesAndCaps` |
 | sync_course_completion (097), triggers 091 | Completion and certificate expiry are computed on the server from the course renewal period | `CompletionService::sync` | `CompletionServiceTest::setsExpiry` |
 | approve_certificate (083) | Only an internal approver can issue; a certificate is not valid until approved | `CertificateService::approve` | `CertificateServiceTest::unapprovedIsNotIssued` |
-| verify_certificate (095) | Public verification returns valid, expired or not issued; no personal data for not issued; rate-limited | `GET /api/verify/{code}` | `VerifyEndpointTest::threeStatesAndNoLeak` |
+| verify_certificate (095) | Public verification returns valid, expired or not issued; no personal data for not issued; rate-limited | `GET /api/verify/{code}` | `backend/tests/suites/050-verify.php` (50 assertions, DONE locally) |
 | archive_course, delete_course_permanently (092) | Deleting a course with enrolments is refused | `CourseService::archive` | `CourseServiceTest::refusesDeleteWithEnrolments` |
 | get_session_join_link (076) | The meeting link is visible only to enrolled or booked users and staff | `SessionService::joinLink` | `SessionServiceTest::linkVisibility` |

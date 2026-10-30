@@ -6,6 +6,8 @@ export class ApiError extends Error {
     readonly status: number,
     readonly code: string,
     message: string,
+    /** Per-field messages from a 422 validation response. */
+    readonly fields?: Record<string, string>,
   ) {
     super(message);
     this.name = "ApiError";
@@ -51,11 +53,16 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
 
   const data: unknown = await response.json().catch(() => null);
   if (!response.ok) {
-    const error = (data as { error?: { code?: string; message?: string } } | null)?.error;
+    const error = (
+      data as {
+        error?: { code?: string; message?: string; fields?: Record<string, string> };
+      } | null
+    )?.error;
     throw new ApiError(
       response.status,
       error?.code ?? "HTTP_ERROR",
       error?.message ?? `Request failed (${response.status})`,
+      error?.fields,
     );
   }
   return data as T;

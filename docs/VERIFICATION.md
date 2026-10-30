@@ -28,6 +28,19 @@ What has actually been run and seen. Anything not listed is NOT TESTED.
 | Built `dist/` audit | no host other than documentation links; no trace of the earlier template or systems; 1.1 MB; the four logo files are byte-identical to the supplied ones (SHA-256 compared) |
 | PWA icons | regenerated from the supplied round logo by `scripts/make-icons.sh`; the starter's placeholder icons are gone |
 
+## Verify, rate limiting and contact (30 Oct 2026, local only)
+
+| Check | Result |
+|---|---|
+| PHP suites | 298 assertions, 0 failed: `050-verify` 50, `060-rate-limit` 14, `070-contact` 50, plus the earlier 184 |
+| Frontend tests | 75 passed (8 files), including the verify and contact pages |
+| `pnpm check` | PASS, exit 0 |
+| Mutation checks | a draft or withdrawn certificate treated as issued fails 4 tests; UTC date instead of London date fails the British Summer Time test; removing the honeypot fails 2; Turnstile failing open when unconfigured fails 1; limiter off by one fails the suite. Originals restored, green |
+| Real stack, local (React + Vite proxy + PHP built-in server + MariaDB 13, **synthetic data only**) | `/api/verify/` returned valid, expired and not issued correctly; a draft and an unknown code returned the identical not-issued answer; the three states rendered in Chrome with no horizontal overflow; the contact form loaded Cloudflare's script with its documented always-pass test key, issued a token, submitted through the page, stored one enquiry and queued exactly one email to the office with the visitor as Reply-To; rate-limit buckets are hashes |
+| A test mistake found on the way | my hand-typed synthetic codes contained I, L and O, which the alphabet excludes, so the API correctly called them malformed |
+
+Not verified: Turnstile server-side against Cloudflare (local bypass was used on the server); real email sending (queued only); the pages at a true 375 px viewport (checked at 300 px frames); screen reader and keyboard pass; CSP in a browser.
+
 ## GitHub Actions (30 Oct 2026)
 
 | Check | Result |
