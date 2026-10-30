@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "biomejs.biome",
+    "editorconfig.editorconfig",
+    "bmewburn.vscode-intelephense-client",
+    "vitest.explorer"
+  ]
+}

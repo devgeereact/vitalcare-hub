@@ -1,0 +1,27 @@
+# One grouped pull request per month per ecosystem. CI must pass before merging.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7 # skip versions younger than a week
+    open-pull-requests-limit: 3
+    groups:
+      dependencies:
+        patterns: ["*"]
+        update-types: ["minor", "patch"] # majors arrive one per PR
+    ignore:
+      - dependency-name: "@types/node" # stay on the Node major we run (.node-version)
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7 # skip versions younger than a week
+    groups:
+      actions:
+        patterns: ["*"]

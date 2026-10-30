@@ -1,0 +1,43 @@
+{
+  "name": "vitalcare-hub",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Care-sector training, certificates anyone can verify, and the staff compliance register behind them. Vitalcare Training Hub Ltd.",
+  "packageManager": "pnpm@12.15.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:local": "node scripts/dev.mjs --local",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "prepare": "git rev-parse --git-dir >/dev/null 2>&1 && git config core.hooksPath .githooks || true",
+    "dev:web": "vite",
+    "deploy:check": "bash scripts/deploy-rsync.sh \"$DEPLOY_TARGET\"",
+    "deploy": "bash scripts/deploy-rsync.sh \"$DEPLOY_TARGET\" --go"
+  },
+  "dependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "workbox-window": "^7.4.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.3",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "typescript": "^6.0.3",
+    "vite": "^8.3.5",
+    "vite-plugin-pwa": "^2.0.0",
+    "vitest": "^5.0.5"
+  }
+}

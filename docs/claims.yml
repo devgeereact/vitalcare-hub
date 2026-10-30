@@ -1,0 +1,109 @@
+# Claim register. A page may use a claim only when status is PROVEN.
+# A build check (added in slice 2) fails if any page references a claim that is not PROVEN.
+# status: REQUIRED = the owner has not yet supplied proof. PROVEN = proof file and owner named.
+# Wording for REQUIRED claims is deliberately empty: nothing ships until it is proven.
+# Evidence references point to files kept outside this repository when they hold personal data.
+# Updated 30 Oct 2026 from docs/history/inv-claims.md.
+
+company_identity:
+  status: PROVEN
+  text: "Vitalcare Training Hub Ltd, company number 15718997, registered in England and Wales. Registered office: 11 Halesworth Road, London SE13 7TJ."
+  evidence: "Companies House record read directly 30 Oct 2026: VITALCARE TRAINING HUB LTD, Active, private limited company, registered office 11 Halesworth Road, London, England, SE13 7TJ. Re-check before launch"
+  owner: "owner"
+
+company_incorporated:
+  status: PROVEN
+  text: "Incorporated on 14 May 2024."
+  evidence: "Companies House record read directly 30 Oct 2026: incorporated 14 May 2024"
+  owner: "owner"
+
+contact_details:
+  status: PROVEN
+  text: "Email info@vitalcare.uk. Telephone 020 8059 8757. Monday to Friday, 9am to 5pm."
+  evidence: "Owner reply 30 Oct 2026; hours as stated on the current contact page"
+  owner: "owner"
+
+cpd_hours_recorded:
+  status: REQUIRED
+  needs: "True only once the certificate template ships and a test shows it records course, date, hours and assessment result (slice 3). No outside body is implied"
+  text: ""
+
+cpd_accreditation:
+  status: REQUIRED
+  needs: "Accrediting body, certificate or reference number, scope, logo permission"
+  text: ""
+
+cstf_alignment:
+  status: REQUIRED
+  needs: "A signed mapping per course to CSTF subjects, with refresher period and who signed it off"
+  text: ""
+
+cqc_claims:
+  status: REQUIRED
+  needs: "Nothing can be claimed: CQC does not approve training providers. Do not use 'CQC compliant' or 'CQC ready'"
+  text: ""
+
+clinical_director_oversight:
+  status: REQUIRED
+  needs: "Harni Muharami's written consent to be named, NMC PIN, qualification evidence, and what she actually reviews"
+  text: ""
+
+trainer_credentials:
+  status: REQUIRED
+  needs: "Consent, credentials and the wording of 'delivered by' for each named trainer"
+  text: ""
+
+course_count_and_catalogue:
+  status: REQUIRED
+  needs: "The approved list of published courses with duration, format, assessment, pass rule, renewal period and price"
+  text: ""
+
+testimonials:
+  status: REQUIRED
+  needs: "Real learner or employer quotes with written consent and the date given. Do not invent or imply any"
+  text: ""
+
+client_names_and_sectors:
+  status: REQUIRED
+  needs: "Named clients with permission, or none"
+  text: ""
+
+ico_registration:
+  status: REQUIRED
+  needs: "ICO registration number"
+  text: ""
+
+certificate_turnaround:
+  status: REQUIRED
+  needs: "A turnaround Vitalcare can keep, agreed by the owner"
+  text: ""
+
+reply_time:
+  status: REQUIRED
+  needs: "A reply time Vitalcare can keep. Until then no promise is published"
+  text: ""
+
+consumer_refund_and_cancellation:
+  status: REQUIRED
+  needs: "Legal advice on the Consumer Contracts Regulations for individual buyers, and a consent step if cancellation rights end at first access"
+  text: ""
+
+vat_status:
+  status: REQUIRED
+  needs: "VAT registration status, number and the treatment for training services"
+  text: ""
+
+payment_details:
+  status: REQUIRED
+  needs: "Account name, sort code and account number approved by the account holder"
+  text: ""
+
+data_retention_periods:
+  status: REQUIRED
+  needs: "A purpose and a period for each data category"
+  text: ""
+
+insurance_and_supplier_registrations:
+  status: REQUIRED
+  needs: "Evidence of any insurance or NHS supplier registration before it is mentioned"
+  text: ""

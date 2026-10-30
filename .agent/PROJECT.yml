@@ -1,0 +1,25 @@
+# Facts about this project. Keep it current; never put secrets here.
+schema_version: 2
+name: "Vitalcare Training Hub"
+route: B               # A | B | C
+tier: FULL              # LITE | FULL
+status: scaffold       # scaffold | foundation | building | live (plans approved; no server change yet)
+last_reviewed: 2026-10-30
+
+stack:
+  frontend: react-typescript-vite-pwa
+  backend: php (cpanel, PHP 8.2+, web version confirmed at /api/health)
+  database: mariadb (MariaDB 11.4 on cPanel; new database planned, E7)
+  auth: clerk (production instance, email code only; roles in the database)
+
+targets:
+  coming_soon: https://vitalcare.uk (earlier release, still live)
+  staging: null
+  production: https://vitalcare.uk (docroot ~/vitalcare.uk)
+
+release:
+  deploy: local-build-rsync   # scripts/deploy-rsync.sh, checksum dry run first, no --delete
+  auto_deploy: false
+  last_release: null        # vX.Y.Z (sha)
+
+optional_services: []       # each needs an approved entry in docs/DECISIONS.md

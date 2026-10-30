@@ -1,0 +1,10 @@
+{
+  "appName": "Vitalcare Training Hub",
+  "shortName": "Vitalcare",
+  "slug": "vitalcare-hub",
+  "description": "Care-sector training, certificates anyone can verify, and the staff compliance register behind them. Vitalcare Training Hub Ltd.",
+  "appUrl": "https://vitalcare.uk",
+  "themeColor": "#1b2e6b",
+  "devPort": "5175",
+  "apiPort": "3175"
+}

@@ -1,0 +1,77 @@
+/* Design tokens — replace with the approved values from docs/DESIGN.md. */
+:root {
+  --brand: #1b2e6b;
+  --text: #183d34;
+  --surface: #f6f7f4;
+  --border: #b8c7bd;
+  --focus: #5e826a;
+  --space: 1rem;
+  --radius: 0.75rem;
+
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--text);
+  background: var(--surface);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  max-width: 60rem;
+  margin: auto;
+  padding: clamp(1.5rem, 5vw, 4rem);
+}
+
+h1 {
+  font-size: clamp(2rem, 6vw, 4rem);
+  line-height: 1.1;
+}
+
+p {
+  line-height: 1.7;
+}
+
+section {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+button {
+  font: inherit;
+  padding: 0.7rem 1rem;
+  margin: 0.4rem;
+  border: 1px solid currentColor;
+  border-radius: 0.4rem;
+  background: white;
+  color: var(--brand);
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* biome-ignore-start lint/complexity/noImportantStyles: the user's reduced-motion setting must win */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+/* biome-ignore-end lint/complexity/noImportantStyles: the user's reduced-motion setting must win */

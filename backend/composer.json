@@ -1,0 +1,22 @@
+{
+  "name": "vitalcare/hub-backend",
+  "description": "Private PHP API for Vitalcare Training Hub",
+  "type": "project",
+  "require": {
+    "php": ">=8.2",
+    "ext-openssl": "*",
+    "ext-pdo": "*",
+    "ext-mbstring": "*"
+  },
+  "config": {
+    "platform": {
+      "php": "8.2.0"
+    },
+    "sort-packages": true
+  },
+  "autoload": {
+    "psr-4": {
+      "Vitalcare\\": "src/"
+    }
+  }
+}

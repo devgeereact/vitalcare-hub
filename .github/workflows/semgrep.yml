@@ -1,0 +1,41 @@
+# Security scan of our own code (Semgrep, free tier): PHP + TypeScript, cross-file.
+# Results: semgrep.dev and comments on pull requests (Semgrep GitHub app).
+# Needs the repository secret SEMGREP_APP_TOKEN; without it the job skips with a notice.
+# Report-only until 11 Nov 2026: then delete `continue-on-error` so blocking findings fail the check.
+name: Semgrep
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A newer push to the same branch cancels the older run (saves Actions minutes).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  semgrep:
+    if: github.actor != 'dependabot[bot]' # Dependabot pull requests get no secrets
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    continue-on-error: true
+    container:
+      image: semgrep/semgrep:1.182.0@sha256:4a34048c04fef049f71665047f074cffb00cc3d89482f965a5cd151d589237af
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Semgrep scan
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+        run: |
+          if [ -z "$SEMGREP_APP_TOKEN" ]; then
+            echo "::notice::SEMGREP_APP_TOKEN is not set; skipping the scan."
+            exit 0
+          fi
+          semgrep ci

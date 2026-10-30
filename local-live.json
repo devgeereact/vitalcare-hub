@@ -1,0 +1,9 @@
+{
+  "host": "",
+  "live": "",
+  "api": ["/api/"],
+  "port": 5175,
+  "dev": ["pnpm", "exec", "vite"],
+  "clerkKey": "",
+  "open": "/"
+}
