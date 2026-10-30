@@ -39,6 +39,7 @@
 - **E7 (approved)**: created MariaDB database `<account>_vch` with users `_mig` (all rights on it) and `_run` (data only); credentials generated on the server and written to two 0600 files; never printed. Old database untouched.
 - **E8 part 1 (approved)**: uploaded `backup.sh` to `~/vitalcare-private/app/bin/`; one backup run by hand and verified; copied to this Mac and restored into a throwaway database. **Crontab NOT changed** (asked for a separate go).
 - **Push (approved)**: `152a95b`; CI green.
+- **Owner delegated the judgement calls ("recommend the best practice and go ahead")**, 30 Oct 2026. Done under that: push of `132b0c0`; E11 (API code and shim); E9 (`.htaccess` merge); E12 (pinned backup, then migrations 001 to 004); E13 (one super admin row); E8 cron (marked block appended; crontab saved first; other lines proven identical). **Not done on purpose:** E10 static site (D-015), E14 Turnstile, E15 DNS, E16 Clerk, E17 launch, E18 cutover.
 - Read-only reads: ( SSH reads of the three Vitalcare folders, cPanel API listings, Clerk config read, Cloudflare zone read, Companies House read.)
 
 ## Unpushed

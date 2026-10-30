@@ -28,7 +28,7 @@ Two users: a **runtime** user (data rights only) used by the API, and a **migrat
 - on any failure it exits non-zero, removes its unfinished folder, prunes nothing and says why;
 - `--pin` makes a pinned pre-migration backup that rotation never touches. **Make one immediately before every migration run.**
 
-Nightly schedule: PLANNED. The crontab lines need the owner's named go (shared crontab).
+Nightly schedule: DONE. One marked block in the user crontab runs `backup.sh` at 02:20 server time (EDT) and logs to `~/vitalcare-private/logs/backup.log`. The previous crontab is saved in `~/vitalcare-private/logs/` (0600). **Off-server copies are manual**: download the newest backup folder to the owner's Mac now and then (same-server backups do not survive losing the hosting account).
 
 ### Restore test (a backup is real only after this)
 

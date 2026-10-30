@@ -28,6 +28,24 @@ What has actually been run and seen. Anything not listed is NOT TESTED.
 | Built `dist/` audit | no host other than documentation links; no trace of the earlier template or systems; 1.1 MB; the four logo files are byte-identical to the supplied ones (SHA-256 compared) |
 | PWA icons | regenerated from the supplied round logo by `scripts/make-icons.sh`; the starter's placeholder icons are gone |
 
+## Backend deployment (30 Oct 2026)
+
+| Step | Evidence |
+|---|---|
+| Tools | `merge-htaccess.py` 19 tests; `deploy-api.sh` 34 tests with mutation checks (foreign `index.php` overwrite, `--delete`, mkdir in dry run all caught); in `pnpm check` and CI |
+| API deploy | dry run listed 25 files; real deploy; 20 PHP files pass `php -l` under 8.4; six sampled checksums equal the repository; the shim holds no secrets |
+| `.htaccess` | live checksum equalled the E5 backup immediately before; merge is additive (14 lines) after the origin lock, lock block hash identical, idempotent; applied atomically |
+| Through Cloudflare | `/` still the coming-soon page (200); `/platform` SPA fallback (200); `/api/health` 200 JSON with `no-store`; `/api/nope` 404; direct-to-origin without `CF-RAY` 403 for `/` and `/api/health`; the stale docroot `error_log` returns 403; private-looking URLs return only the coming-soon page (no PHP, no config) |
+| Fails closed | with the web PHP lacking `pdo_mysql`: `/api/me`, `/api/verify/...` and `/api/contact` all 503 |
+| Migrations | pinned pre-migration backup first; 4 applied, second run none; checksums equal the repo; 7 tables; runtime user denied DROP, ALTER, CREATE, TRUNCATE, DROP DATABASE; restore of a fresh backup into a throwaway database: 7 tables, 4 migrations, identical checksums, constraint still refuses a bad role |
+| Super admin | 1 row, `super_admin`, active, no Clerk id; a second seed attempt refused |
+| Cron | crontab minus our block byte-identical to the saved copy; script run under `env -i` with `PATH=/usr/bin:/bin`: complete, checksums OK |
+| CI on `132b0c0` | PASS; the log shows 298 PHP, 39 backup, 19 merge and 33 deploy assertions |
+
+Defects found and fixed along the way: the deploy script created folders during a dry run (now tested); the backup script's first server run failed silently and could be overridden by another site's `~/.my.cnf` (both fixed earlier).
+
+Still NOT TESTED: the web PHP version fix; the Authorization header actually reaching PHP (needs a real Clerk token); a real email-code sign-in; Turnstile server-side; the first scheduled cron run (due 02:20); the CSP; the single-page app on the domain.
+
 ## Server foundation (30 Oct 2026)
 
 | Step | Evidence |

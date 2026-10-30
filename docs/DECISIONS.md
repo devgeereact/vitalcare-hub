@@ -2,6 +2,13 @@
 
 One entry per significant choice. Newest first. "Approved" means the owner said so in the session on that date; "Proposed" needs an answer before the work that depends on it.
 
+## D-015: Backend first, frontend at launch (2026-10-30)
+- **Status:** Approved 2026-10-30 (the owner asked me to apply best practice and proceed)
+- **Context:** The live site is a designed coming-soon page. The new Home page is plainer, and the course content, proofs and Turnstile are not ready.
+- **Decision:** Deploy the database, the private app, the API shim and the `.htaccess` routing now; leave the static site and `robots.txt` untouched until a named launch step (E17). The API is reachable but every route that needs the database fails closed (503) until the web PHP version is fixed, and the contact form fails closed until the Turnstile secret is placed.
+- **Consequences:** no visible change for visitors; the real sign-in test uses local-live (E15) instead of the public site.
+- **Approved by:** owner, 2026-10-30
+
 ## D-014: CLI and database tooling on the shared host (2026-10-30)
 - **Status:** Approved by the owner's instruction to proceed with E7 and E8; recorded because it came from a defect.
 - **Context:** The cPanel account is shared. Its default `php` can change (8.4 to 8.5 within a day, and 8.5 has no `pdo_mysql`), and its `~/.my.cnf` holds another site's database credentials, which silently override `--defaults-extra-file`.

@@ -24,6 +24,13 @@ pnpm deploy           # only after approval of the dry run
 
 The script was tested on throwaway folders (dry run changes nothing, the target `.htaccess` is untouched, stray target files are kept, entry files upload last). It has **not** been run against the server.
 
+## API deploy (done once, 30 Oct 2026)
+
+```bash
+bash scripts/deploy-api.sh <ssh-alias> <account home> --go   # dry run without --go
+```
+Copies `backend/{src,bin,migrations}` and the front controller into `~/vitalcare-private/app/`, and writes the generated shim `api/index.php` in the docroot. Never deletes, never touches `config/`, `storage/`, `.htaccess` or the static site. Run migrations and tools with an explicit `/opt/alt/php84/usr/bin/php`.
+
 ## `.htaccess`
 
 The live file starts with the Cloudflare origin lock. Our rules are merged after it between `# === BEGIN vitalcare-hub ===` and `# === END vitalcare-hub ===`: `/api/` routing before the SPA fallback, security headers, the CSP naming the Clerk hosts (clerk.vitalcare.uk, cdn.protect.clerk.com, challenges.cloudflare.com, img.clerk.com, clerk-telemetry.com), cache rules. A unified diff against the live file is shown and approved first; the previous file is saved first (E5, E9 in `docs/FOUNDATION-PLAN.md`).

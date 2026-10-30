@@ -51,8 +51,8 @@ RS=(rsync -rlt --checksum --itemize-changes --exclude '*.test.*' --exclude 'test
 [ "$MODE" = "--go" ] || RS+=(--dry-run)
 [ "$MODE" = "--go" ] && echo "== DEPLOY to $HOST:$APP" || echo "== DRY RUN (checksum). Nothing is changed. Target: $HOST:$APP"
 
-run "mkdir -p '$APP/src' '$APP/bin' '$APP/migrations' '$APP/public'" >/dev/null 2>&1 || true
-[ "$MODE" = "--go" ] || true
+# Folders are created only for a real deploy: a dry run must change nothing, folders included.
+[ "$MODE" = "--go" ] && run "mkdir -p '$APP/src' '$APP/bin' '$APP/migrations' '$APP/public'"
 for pair in "backend/src/:$APP/src/" "backend/bin/:$APP/bin/" "backend/migrations/:$APP/migrations/"; do
   "${RS[@]}" "${pair%%:*}" "$(DEST "${pair#*:}")"
 done

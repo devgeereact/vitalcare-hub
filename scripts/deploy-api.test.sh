@@ -14,8 +14,10 @@ echo "stray" > "$H/vitalcare.uk/api/uploads/keep.png"
 echo "<?php return 'config';" > "$H/vitalcare-private/config/prod.php"; chmod 600 "$H/vitalcare-private/config/prod.php"
 echo "SECRET-CONFIG-VALUE" > "$H/vitalcare-private/config/backup.cnf"
 
-# dry run changes nothing
+# dry run changes nothing: not files, and not folders either
+BEFORE="$(cd "$H" && find . | sort | shasum -a 256)"
 OUT="$(deploy)"; rc=$?
+[ "$(cd "$H" && find . | sort | shasum -a 256)" = "$BEFORE" ]; check "dry run creates no files and no folders" $?
 check "dry run exits 0" $rc
 [ ! -e "$H/vitalcare-private/app/src/Api.php" ] && [ ! -e "$H/vitalcare.uk/api/index.php" ]; check "dry run writes nothing" $?
 echo "$OUT" | grep -q "DRY RUN"; check "dry run says it is a dry run" $?
