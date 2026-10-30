@@ -40,7 +40,7 @@ check('output names the key', str_contains($out, 'set clerk.authorized_parties')
 
 // Secrets: applied, but never echoed anywhere.
 $reset();
-$secretValue = 'S3cret-Value_abc123XYZ';
+$secretValue = '0x4AAAAAAATestSecret_abc123XYZ';
 [$rc, $out, $err] = $run(['set' => ['turnstile.secret' => $secretValue, 'smtp.password' => 'Mailbox-Pass_9876xyz']]);
 check('secrets are applied', $rc === 0 && $load()['turnstile']['secret'] === $secretValue && $load()['smtp']['password'] === 'Mailbox-Pass_9876xyz');
 check('secret values are never printed to stdout', !str_contains($out, $secretValue) && !str_contains($out, 'Mailbox-Pass'));
@@ -68,6 +68,9 @@ $refuse('origin with a path', ['set' => ['clerk.authorized_parties' => ['https:/
 $refuse('empty origin list', ['set' => ['clerk.authorized_parties' => []]], 3);
 $refuse('origin list as a string', ['set' => ['clerk.authorized_parties' => 'https://vitalcare.uk']], 3);
 $e = $refuse('short secret', ['set' => ['turnstile.secret' => 'short']], 3);
+$refuse('a Turnstile secret not in Cloudflare\'s format (looks like a mailbox password)', ['set' => ['turnstile.secret' => 'Mailbox-Pass_9876xyz1']], 3);
+$refuse('a Turnstile secret with the right prefix but too short', ['set' => ['turnstile.secret' => '0x4AAA']], 3);
+$refuse('a Turnstile secret with a wrong prefix', ['set' => ['turnstile.secret' => '9x4AAAAAAATestSecret_abc123XYZ']], 3);
 check('the short secret is not echoed back', !str_contains($e, 'short'));
 $refuse('secret with a newline', ['set' => ['smtp.password' => "line1\nline2-longer"]], 3);
 $refuse('secret with a space', ['set' => ['turnstile.secret' => 'has a space inside it']], 3);
@@ -80,6 +83,20 @@ $refuse('one bad key among good ones refuses the whole request', ['set' => ['off
 $refuse('empty set', ['set' => []], 2);
 $refuse('not JSON', 'this is not json', 2);
 $refuse('wrong shape', ['nothing' => 1], 2);
+
+// The same value must not end up in two different secrets.
+$reset();
+$run(['set' => ['smtp.password' => '0x4AAAAAAATestSecret_abc123XYZ']]);
+[$rc, $o, $e2] = $run(['set' => ['turnstile.secret' => '0x4AAAAAAATestSecret_abc123XYZ']]);
+check('the same value in turnstile.secret and smtp.password is refused', $rc === 3 && str_contains($e2, 'same text pasted twice'), "rc=$rc $e2");
+check('...and the refused value is not echoed', !str_contains($o . $e2, '0x4AAAAAAATestSecret'));
+check('...and turnstile.secret was not changed', $load()['turnstile']['secret'] === '');
+$reset();
+$run(['set' => ['turnstile.secret' => '0x4AAAAAAATestSecret_abc123XYZ']]);
+[$rc] = $run(['set' => ['smtp.password' => '0x4AAAAAAATestSecret_abc123XYZ']]);
+check('...in either order', $rc === 3);
+[$rc] = $run(['set' => ['smtp.password' => 'A-Different_Mailbox_Pass9']]);
+check('a different value is accepted', $rc === 0);
 
 // Missing or broken config.
 unlink($file);

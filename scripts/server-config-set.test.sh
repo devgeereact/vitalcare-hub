@@ -21,8 +21,8 @@ bash scripts/server-config-set.sh secret smtp.password </dev/null >/dev/null 2>&
 printf 'Pasted-Secret_Value-123\r\n' | bash scripts/server-config-set.sh secret smtp.password --stdin >/dev/null 2>&1; rc=$?
 check "a trailing carriage return from a paste is removed and the value accepted" $rc
 [ "$(val smtp.password)" = "Pasted-Secret_Value-123" ]; check "...and what is stored has no carriage return" $?
-printf '\033[200~Bracketed-Paste_Value-1\033[201~\n' | bash scripts/server-config-set.sh secret turnstile.secret --stdin >/dev/null 2>&1
-[ "$(val turnstile.secret)" = "Bracketed-Paste_Value-1" ]; check "terminal bracketed-paste markers are removed" $?
+printf '\033[200~0x4AAAAAAABracketedPaste_Value1\033[201~\n' | bash scripts/server-config-set.sh secret turnstile.secret --stdin >/dev/null 2>&1
+[ "$(val turnstile.secret)" = "0x4AAAAAAABracketedPaste_Value1" ]; check "terminal bracketed-paste markers are removed" $?
 printf '   Spaces_Around_Value-9   \n' | bash scripts/server-config-set.sh secret smtp.password --stdin >/dev/null 2>&1
 [ "$(val smtp.password)" = "Spaces_Around_Value-9" ]; check "spaces around the value are trimmed" $?
 for bad in 'has a space inside' 'short' 'cafÃ©-with-accent-1' ; do
@@ -33,7 +33,7 @@ for bad in 'has a space inside' 'short' 'cafÃ©-with-accent-1' ; do
 done
 R1="$(printf 'has a space inside\n' | bash scripts/server-config-set.sh secret turnstile.secret --stdin 2>&1 || true)"; echo "$R1" | grep -q "space"; check "the reason for an inner space says so" $?
 R2="$(printf 'short\n' | bash scripts/server-config-set.sh secret turnstile.secret --stdin 2>&1 || true)"; echo "$R2" | grep -q "only 5 characters"; check "the reason for a short value gives its length" $?
-[ "$(val turnstile.secret)" = "Bracketed-Paste_Value-1" ]; check "a refused value leaves the stored one untouched" $?
+[ "$(val turnstile.secret)" = "0x4AAAAAAABracketedPaste_Value1" ]; check "a refused value leaves the stored one untouched" $?
 printf '' | bash scripts/server-config-set.sh secret turnstile.secret --stdin >/dev/null 2>&1; [ $? -ne 0 ]; check "an empty secret is refused" $?
 printf 'short' | bash scripts/server-config-set.sh secret turnstile.secret --stdin >/dev/null 2>&1; [ $? -ne 0 ]; check "a too-short secret is refused by the server-side tool" $?
 bash scripts/server-config-set.sh set db.password=hacked12345 >/dev/null 2>&1; [ $? -ne 0 ]; check "a key outside the allowlist is refused" $?

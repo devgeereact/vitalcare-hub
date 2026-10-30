@@ -31,7 +31,8 @@ $secret = static fn (mixed $v): bool => is_string($v) && strlen($v) >= 8 && strl
 $allowed = [
     'office_email' => [$email, false],
     'clerk.authorized_parties' => [static fn (mixed $v): bool => is_array($v) && $v !== [] && array_is_list($v) && count($v) <= 10 && array_reduce($v, static fn (bool $c, mixed $o): bool => $c && is_string($o) && preg_match('#^https://[a-z0-9.-]+(:\d{2,5})?$#', $o) === 1, true), false],
-    'turnstile.secret' => [$secret, true],
+    // Cloudflare Turnstile secrets start with 0x (live keys, 0x4...) or 1x, 2x, 3x (Cloudflare's published test keys).
+    'turnstile.secret' => [static fn (mixed $v): bool => $secret($v) && preg_match('/^[0-3]x[A-Za-z0-9_-]{18,}$/', $v) === 1, true],
     'smtp.host' => [static fn (mixed $v): bool => is_string($v) && preg_match('/^[a-z0-9]([a-z0-9.-]{0,251}[a-z0-9])?$/i', $v) === 1, false],
     'smtp.port' => [static fn (mixed $v): bool => $v === 465 || $v === 587, false],
     'smtp.secure' => [static fn (mixed $v): bool => $v === 'ssl' || $v === 'tls', false],
@@ -80,6 +81,14 @@ foreach ($in['set'] as $key => $value) {
         }
     }
     unset($ref);
+}
+
+// Two different secrets must never hold the same value: that is almost always the same text pasted twice.
+$ts = $config['turnstile']['secret'] ?? '';
+$sp = $config['smtp']['password'] ?? '';
+if ($ts !== '' && $sp !== '' && hash_equals($ts, $sp)) {
+    fwrite(STDERR, "Refused: turnstile.secret and smtp.password would hold the same value. That is almost certainly the same text pasted twice. Nothing changed.\n");
+    exit(3);
 }
 
 $php = "<?php\n// Private runtime configuration. Outside every webroot, mode 0600. Never commit or print.\n"
