@@ -17,7 +17,8 @@ final class Config
      *   migrate: array{dsn:string,user:string,password:string},
      *   clerk: array{issuer:string,authorized_parties:list<string>},
      *   office_email: string,
-     *   turnstile: array{secret:string,dev_bypass:bool}
+     *   turnstile: array{secret:string,dev_bypass:bool},
+     *   smtp: ?array{host:string,port:int,secure:string,user:string,password:string,from_email:string,from_name:string}
      * }
      */
     public static function load(string $privateRoot, string $name = 'prod'): array
@@ -67,6 +68,40 @@ final class Config
             // Local development only. A production config must never set this.
             'dev_bypass' => ($t['dev_bypass'] ?? false) === true,
         ];
+
+        // Optional. Without a complete, valid smtp section the outbox sender does nothing and mail stays queued.
+        $c['smtp'] = self::smtp($c['smtp'] ?? null);
         return $c;
+    }
+
+    /**
+     * The mail-sending settings, or null unless every one of them is present and valid. Deliberately lenient:
+     * a half-finished smtp section must disable mail sending only, never the API (a throw here would put the
+     * whole API into its "unconfigured" mode).
+     *
+     * @return array{host:string,port:int,secure:string,user:string,password:string,from_email:string,from_name:string}|null
+     */
+    private static function smtp(mixed $s): ?array
+    {
+        if (!is_array($s)) {
+            return null;
+        }
+        foreach (['host', 'user', 'password', 'from_email', 'from_name', 'secure'] as $k) {
+            if (!isset($s[$k]) || !is_string($s[$k]) || $s[$k] === '') {
+                return null;
+            }
+        }
+        if (($s['port'] ?? null) !== 465 && ($s['port'] ?? null) !== 587) {
+            return null;
+        }
+        if (!in_array($s['secure'], ['ssl', 'tls'], true)
+            || SessionResolver::normaliseEmail($s['user']) === null
+            || SessionResolver::normaliseEmail($s['from_email']) === null) {
+            return null;
+        }
+        return [
+            'host' => $s['host'], 'port' => $s['port'], 'secure' => $s['secure'], 'user' => $s['user'],
+            'password' => $s['password'], 'from_email' => $s['from_email'], 'from_name' => $s['from_name'],
+        ];
     }
 }

@@ -1,9 +1,10 @@
 {
-  "host": "",
-  "live": "",
+  "host": "local.vitalcare.uk",
+  "live": "https://vitalcare.uk",
   "api": ["/api/"],
   "port": 5175,
   "dev": ["pnpm", "exec", "vite"],
-  "clerkKey": "",
+  "env": { "VITE_TURNSTILE_SITE_KEY": "0x4AAAAAAFsrA-d-wIegPt_V" },
+  "clerkKey": "pk_live_Y2xlcmsudml0YWxjYXJlLnVrJA",
   "open": "/"
 }

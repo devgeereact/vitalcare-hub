@@ -35,7 +35,14 @@ jobs:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
         run: |
           if [ -z "$SEMGREP_APP_TOKEN" ]; then
-            echo "::notice::SEMGREP_APP_TOKEN is not set; skipping the scan."
+            # No token: still scan, with the community rule packs and no login. Report-only like the
+            # managed scan: findings are printed and the job is allowed to fail (continue-on-error).
+            echo "::notice::SEMGREP_APP_TOKEN is not set; scanning with the community rule packs instead."
+            semgrep scan --metrics=off --error \
+              --config p/php --config p/typescript --config p/javascript --config p/react \
+              --config p/owasp-top-ten --config p/secrets \
+              --exclude node_modules --exclude dist \
+              backend src scripts public
             exit 0
           fi
           semgrep ci

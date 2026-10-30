@@ -29,7 +29,7 @@
     "claims": "node scripts/claims.mjs",
     "check:content": "node scripts/claims.mjs --check && node scripts/check-copy.mjs",
     "test:backup": "bash backend/tests/backup.test.sh",
-    "test:scripts": "python3 scripts/merge-htaccess.test.py && bash scripts/deploy-api.test.sh"
+    "test:scripts": "python3 scripts/merge-htaccess.test.py && bash scripts/deploy-api.test.sh && bash scripts/server-config-set.test.sh"
   },
   "dependencies": {
     "@clerk/react": "^6.18.3",
