@@ -43,6 +43,25 @@ Done once on 30 Oct 2026 with the first backup, which holds **no tables yet**, s
 
 Restore only into the production database after the owner approves, after taking a fresh pinned backup of the current state, and never by dropping or truncating live data without that approval.
 
+## Placing secrets and settings (never by hand, never in chat)
+
+`scripts/server-config-set.sh` changes allowlisted values in the server's private config through `bin/config-set.php`. Values travel over ssh on stdin and are never printed, put on a command line or kept in shell history; the file stays mode 0600 and the previous version is kept as `prod.php.bak-<UTC>` (newest 5).
+
+```bash
+bash scripts/server-config-set.sh secret turnstile.secret     # prompts silently for the value
+bash scripts/server-config-set.sh secret smtp.password        # the info@ mailbox password, same way
+bash scripts/server-config-set.sh set clerk.authorized_parties=https://vitalcare.uk,https://local.vitalcare.uk
+```
+Allowed keys: `office_email`, `clerk.authorized_parties`, `turnstile.secret`, and `smtp.host|port|secure|user|password|from_email|from_name`. Anything else is refused. A half-finished `smtp` section disables mail sending only, never the API.
+
+## Mail
+
+Contact-form messages are queued in `outbox_email`; `bin/send-outbox.php` sends them every two minutes (cron) through the server's own SMTP on port 465 with certificate checking. It does nothing, silently, until the SMTP password is set. A failed send is retried after 1, 5, 15 and 60 minutes and then 4 hours; after 5 failures the row is marked `failed` and shown in the log. Only one sender runs at a time.
+
+## Old project items kept
+
+The verified dump of the previous application's database is in `~/vitalcare-backups/legacy/` (0700), with a copy on the owner's Mac. To restore it into a scratch database, remove the `DEFINER=` clauses on the way in: `gzip -dc db.sql.gz | sed -E 's/DEFINER=`[^`]*`@`[^`]*`//g' | mariadb <scratch>`.
+
 ## Rollback
 
 See `docs/DEPLOYMENT.md` (site files, `.htaccess`) and the restore steps above (database).

@@ -59,7 +59,9 @@ RS=(rsync -rlt --checksum --itemize-changes --exclude '*.test.*' --exclude 'test
 for pair in "backend/src/:$APP/src/" "backend/bin/:$APP/bin/" "backend/migrations/:$APP/migrations/"; do
   "${RS[@]}" "${pair%%:*}" "$(DEST "${pair#*:}")"
 done
-"${RS[@]}" backend/public/index.php "$(DEST "$APP/public/index.php")"
+# The single front-controller file is synced as a directory with a filter. GNU rsync (Linux, the server and CI)
+# exits with an error on a dry run of a single FILE into a folder that does not exist yet; a directory works.
+"${RS[@]}" --include='index.php' --exclude='*' backend/public/ "$(DEST "$APP/public/")"
 
 # The shim: only ever replace one this script wrote.
 CURRENT="$(run "cat '$SHIM' 2>/dev/null" || true)"

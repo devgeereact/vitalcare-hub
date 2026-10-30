@@ -40,6 +40,7 @@
 - **E8 part 1 (approved)**: uploaded `backup.sh` to `~/vitalcare-private/app/bin/`; one backup run by hand and verified; copied to this Mac and restored into a throwaway database. **Crontab NOT changed** (asked for a separate go).
 - **Push (approved)**: `152a95b`; CI green.
 - **Owner delegated the judgement calls ("recommend the best practice and go ahead")**, 30 Oct 2026. Done under that: push of `132b0c0`; E11 (API code and shim); E9 (`.htaccess` merge); E12 (pinned backup, then migrations 001 to 004); E13 (one super admin row); E8 cron (marked block appended; crontab saved first; other lines proven identical). **Not done on purpose:** E10 static site (D-015), E14 Turnstile, E15 DNS, E16 Clerk, E17 launch, E18 cutover.
+- **Owner answers 30 Oct (PHP 8.5 chosen; "get in cloudflare and do that"; "info@vitalcare.uk"; "Go ahead"; "you can delete what not needed")**: PHP pinned to 8.4 for the API folder (the 8.5 build has no database driver); new Turnstile widget created; config tool and SMTP sender built and deployed (migration 005 after a pinned backup); outbox cron added inside our block; non-secret SMTP and origin settings applied; the retired items in D-016 deleted after verified backups. **Waiting on the owner:** `turnstile.secret` and `smtp.password` (via `scripts/server-config-set.sh secret ...`), `local-live setup` (needs the Mac password). Semgrep token not needed for a scan now.
 - Read-only reads: ( SSH reads of the three Vitalcare folders, cPanel API listings, Clerk config read, Cloudflare zone read, Companies House read.)
 
 ## Unpushed

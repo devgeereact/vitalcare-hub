@@ -2,6 +2,13 @@
 
 One entry per significant choice. Newest first. "Approved" means the owner said so in the session on that date; "Proposed" needs an answer before the work that depends on it.
 
+## D-016: Clean-up of retired items (2026-10-30)
+- **Status:** Approved by the owner ("you can delete what not needed")
+- **Rule I applied:** nothing is deleted until a backup of it exists, is verified, and (for data) has been restored somewhere isolated. Deletions were by exact path, from a list, with the result checked afterwards.
+- **Deleted:** the dead crontab line for a script that never existed (every other line proven identical); `vc_cron.log`; the stale docroot `error_log` and the `api/uploads` stub with one image (both byte-identical in the E5 backup); the unused staging folder (all 9 files identical to the E5 backup; no domain pointed at it); the unpacked copy of the old site's files (a byte-identical subset of the kept tarball); the **old application database** (83 tables, 177 rows of test data) and its user, after a dump that was verified, copied to the owner's Mac and restored with the exact same row count in every one of the 83 tables; and the now-dead credentials file for that user.
+- **Kept:** the tarball of the old site, the E5 backup, the verified dump of the old database (0700 on the server and a copy on the owner's Mac), the old repository and its Cloudflare widget (E18).
+- **Approved by:** owner, 2026-10-30
+
 ## D-015: Backend first, frontend at launch (2026-10-30)
 - **Status:** Approved 2026-10-30 (the owner asked me to apply best practice and proceed)
 - **Context:** The live site is a designed coming-soon page. The new Home page is plainer, and the course content, proofs and Turnstile are not ready.

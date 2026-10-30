@@ -28,6 +28,21 @@ What has actually been run and seen. Anything not listed is NOT TESTED.
 | Built `dist/` audit | no host other than documentation links; no trace of the earlier template or systems; 1.1 MB; the four logo files are byte-identical to the supplied ones (SHA-256 compared) |
 | PWA icons | regenerated from the supplied round logo by `scripts/make-icons.sh`; the starter's placeholder icons are gone |
 
+## Mail, config, clean-up and CI (30 Oct 2026)
+
+| Check | Evidence |
+|---|---|
+| PHP version through the web | account default is 8.5.12 **without `pdo_mysql`** (the owner chose 8.5). A generated `api/.htaccess` pins PHP 8.4 for the API folder only: `/api/health` then reports `8.4.27` and `authConfigured: true`; `/api/verify/...` is a real database-backed 200 and `/api/me` is 401 |
+| Turnstile | widget created via the Cloudflare API; the secret was not returned to me; its presence in the config is NOT yet true |
+| Config tool | 64 assertions; four mutations caught (value echoed, allowlist removed, loose file mode, rejected value echoed). On the server: 0600, one backup, database section intact, secrets reported only as set or not set |
+| SMTP client and outbox | 39 and 30 assertions with a scriptable fake server including a self-signed TLS one; six mutations caught (header-injection check, TLS verification, no-AUTH send, back-off, single-sender lock, raw error text). Two of my own tests were too weak at first (TLS verification mutation survived; the fake server died on a failed handshake) and were fixed; I also stopped logging exception messages |
+| Mail on the server | NOT TESTED against the real mail server: the mailbox password is not yet set. The certificate of the server's SMTP host verified OK with `openssl` |
+| Migration 005 | pinned backup first; applied; checksum equals the repository file; second run applies nothing |
+| Cron | crontab changes are limited to our marked block and the one dead line; each proven by comparing with a saved copy |
+| Clean-up | see D-016; old database restored with exact row counts in all 83 tables before it was deleted; the first restore attempt had stopped at 11 tables because of `DEFINER` clauses, which is why the restore step exists |
+| Semgrep | local: 1,460 rules on 84 files, 0 findings. CI now scans with community rules when no token is set: 288 rules on 92 files, 0 findings |
+| **CI red, then fixed** | pushes `c918f61` and `f70cee8` FAILED CI (two `deploy-api` tests): GNU rsync exits 3 on a dry run of a single file into a missing folder, which macOS rsync does not. I had reported `c918f61` as green without checking. Fixed by syncing that file as a directory with a filter (confirmed on the server's rsync 3.1.3) |
+
 ## Backend deployment (30 Oct 2026)
 
 | Step | Evidence |
