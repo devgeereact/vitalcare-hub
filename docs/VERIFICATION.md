@@ -28,6 +28,14 @@ What has actually been run and seen. Anything not listed is NOT TESTED.
 | Built `dist/` audit | no host other than documentation links; no trace of the earlier template or systems; 1.1 MB; the four logo files are byte-identical to the supplied ones (SHA-256 compared) |
 | PWA icons | regenerated from the supplied round logo by `scripts/make-icons.sh`; the starter's placeholder icons are gone |
 
+## GitHub Actions (30 Oct 2026)
+
+| Check | Result |
+|---|---|
+| CI, run 41056672715 on `9287530`, ubuntu-latest, public repo | PASS, every step ran: pnpm install, content checks (3 proven, 17 required claims; copy ok), lint, typecheck, 45 frontend tests (5 files), 184 PHP assertions (5 suites) against the `mariadb:11.4` service container, build, PHP syntax check, gitleaks on git history and on `dist/`: no leaks |
+| Why it had not run before | while private, GitHub refused to start jobs: "recent account payments have failed or your spending limit needs to be increased" |
+| Semgrep | job completes but skips the scan (no token): NOT RUN as a scan |
+
 ## Not tested
 
-Real Clerk tokens and JWKS from `clerk.vitalcare.uk`, and a real email-code sign-in (needs the live issuer, an allowed origin and an existing user; no Clerk users may be created); the sign-in form's appearance (it needs a Clerk key; only its logic is tested); the web PHP version on the server; the service worker; the CSP in a real browser; GitHub Actions: the repository exists and Actions is enabled, but **no job has run**. GitHub refuses to start jobs because of an account billing or spending-limit problem, so CI and Semgrep are BLOCKED (the Semgrep run shows "success" only because of `continue-on-error`; its job failed before any step); Semgrep; backups and restore; any deployment; keyboard path and screen-reader pass; axe; 375 px on the sign-in form itself.
+Real Clerk tokens and JWKS from `clerk.vitalcare.uk`, and a real email-code sign-in (needs the live issuer, an allowed origin and an existing user; no Clerk users may be created); the sign-in form's appearance (it needs a Clerk key; only its logic is tested); the web PHP version on the server; the service worker; the CSP in a real browser; Semgrep: the workflow runs but its own log says `SEMGREP_APP_TOKEN is not set; skipping the scan`, so **no Semgrep scan has happened** (needs the owner's token, E4); Semgrep; backups and restore; any deployment; keyboard path and screen-reader pass; axe; 375 px on the sign-in form itself.
