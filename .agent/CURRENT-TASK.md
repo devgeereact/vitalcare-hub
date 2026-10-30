@@ -35,6 +35,10 @@
 - **E2 (approved: "yes")**: Actions enabled on `devgeereact/vitalcare-hub`. Dependabot opened one PR (TypeScript 6 to 7, a major): left open, not merged.
 - **Visibility (approved: "A", D-013)**: repository made PUBLIC after pushing the scrub commits; tip has no personal or server details, **history still does** (permanent). Then added `workflow_dispatch` to `ci.yml` and pushed (`9287530`); first CI run PASSED (41056672715).
 - **Push (approved: "push")**: `main` now at `6dcbf5a`.
+- **E6 (approved: "Approved")**, 30 Oct 2026: created `~/vitalcare-private/{app,config,storage,tmp,logs}` and `~/vitalcare-backups/{db,files}`, all 0700.
+- **E7 (approved)**: created MariaDB database `<account>_vch` with users `_mig` (all rights on it) and `_run` (data only); credentials generated on the server and written to two 0600 files; never printed. Old database untouched.
+- **E8 part 1 (approved)**: uploaded `backup.sh` to `~/vitalcare-private/app/bin/`; one backup run by hand and verified; copied to this Mac and restored into a throwaway database. **Crontab NOT changed** (asked for a separate go).
+- **Push (approved)**: `152a95b`; CI green.
 - Read-only reads: ( SSH reads of the three Vitalcare folders, cPanel API listings, Clerk config read, Cloudflare zone read, Companies House read.)
 
 ## Unpushed

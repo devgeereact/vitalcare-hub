@@ -25,9 +25,10 @@
     "deploy": "bash scripts/deploy-rsync.sh \"$DEPLOY_TARGET\" --go",
     "lint:php": "find backend -name '*.php' -not -path 'backend/vendor/*' -print0 | xargs -0 -n1 php -l > /dev/null",
     "test:php": "bash scripts/test-db.sh up && php backend/tests/run.php",
-    "check:php": "pnpm lint:php && pnpm test:php",
+    "check:php": "pnpm lint:php && pnpm test:php && pnpm test:backup",
     "claims": "node scripts/claims.mjs",
-    "check:content": "node scripts/claims.mjs --check && node scripts/check-copy.mjs"
+    "check:content": "node scripts/claims.mjs --check && node scripts/check-copy.mjs",
+    "test:backup": "bash backend/tests/backup.test.sh"
   },
   "dependencies": {
     "@clerk/react": "^6.18.3",

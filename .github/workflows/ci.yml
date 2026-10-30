@@ -51,6 +51,11 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # The backup tests need a MariaDB client and dump tool (the runner ships the MySQL 8 ones,
+      # which do not dump a MariaDB server reliably).
+      - name: MariaDB client for the backup tests
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq mariadb-client
+
       - name: Lint, typecheck, test, build
         run: pnpm check
 

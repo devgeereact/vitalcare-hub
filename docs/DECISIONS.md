@@ -2,6 +2,12 @@
 
 One entry per significant choice. Newest first. "Approved" means the owner said so in the session on that date; "Proposed" needs an answer before the work that depends on it.
 
+## D-014: CLI and database tooling on the shared host (2026-10-30)
+- **Status:** Approved by the owner's instruction to proceed with E7 and E8; recorded because it came from a defect.
+- **Context:** The cPanel account is shared. Its default `php` can change (8.4 to 8.5 within a day, and 8.5 has no `pdo_mysql`), and its `~/.my.cnf` holds another site's database credentials, which silently override `--defaults-extra-file`.
+- **Decision:** Cron and CLI tools call an explicit PHP binary (`/opt/alt/php84/usr/bin/php`). Every MariaDB tool uses `--defaults-file` with our own 0600 file. The web PHP version for the domain is set to 8.4 by the owner.
+- **Consequences:** no accidental use of another site's credentials; the migration and backup tools are independent of the default `php`.
+
 ## D-013: Repository visibility (2026-10-30)
 - **Status:** Approved 2026-10-30, **option A**: make this repository public as it is. This is a recorded, named exception to the kit rule "never make a repo public to get around a limit".
 - **Context:** GitHub refuses to start Actions jobs on the private repository because of an account payment or spending-limit problem. The owner chose to make it public so CI runs on free minutes. A public repository publishes its whole history, and rewriting history is not allowed.

@@ -28,6 +28,19 @@ What has actually been run and seen. Anything not listed is NOT TESTED.
 | Built `dist/` audit | no host other than documentation links; no trace of the earlier template or systems; 1.1 MB; the four logo files are byte-identical to the supplied ones (SHA-256 compared) |
 | PWA icons | regenerated from the supplied round logo by `scripts/make-icons.sh`; the starter's placeholder icons are gone |
 
+## Server foundation (30 Oct 2026)
+
+| Step | Evidence |
+|---|---|
+| E6 private directories | `ls -ld`: every folder `drwx------`; `vitalcare-private` is a sibling of the docroot |
+| E7 database and users | cPanel API: database with exactly the two users; both connect (PHP 8.4, PDO mysql); `SHOW GRANTS` as designed; runtime user denied `CREATE TABLE`; `prod.php` and `backup.cnf` are `-rw-------`; secrets never printed; the old database untouched |
+| E8 backup script (no cron yet) | `backup.sh` on the server equals the repository file (SHA-256 prefix match); first backup COMPLETE, `sha256sum -c` OK, files 0600 in a 0700 folder, no leftovers; copied to the owner's Mac and restored into a throwaway database (0 tables, because the database is empty) |
+| Backup script tests | `backend/tests/backup.test.sh`: 39 assertions, now part of `pnpm check`; six mutations (truncated dump, table-count check, pinned backups pruned, partial folders left, loose credentials accepted, no lock) plus the option-file mutation are all caught |
+| Defects found on the way | (1) the first server run failed **silently**: the dump error was discarded; it now prints the tool's error. (2) `mariadb-dump` connected as **another site's database user** because the account's `~/.my.cnf` overrides `--defaults-extra-file`; fixed with `--defaults-file` and covered by a test. (3) The server's default `php` is 8.5 without `pdo_mysql`. (4) Two of my first mutation tests were too weak and let mutants survive; fixed |
+| CI on `152a95b` | PASS: all steps, 298 PHP assertions |
+
+Not verified: a restore with real data; the nightly cron; the CI step that installs `mariadb-client` for the backup tests (added after that run, not yet run on GitHub).
+
 ## Verify, rate limiting and contact (30 Oct 2026, local only)
 
 | Check | Result |
