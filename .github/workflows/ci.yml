@@ -19,6 +19,21 @@ jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Throwaway database for the PHP tests only. Local to the job; no real data, no secrets.
+    services:
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_ROOT_PASSWORD: ci_throwaway_only
+        ports:
+          - 33175:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=12
+    env:
+      TEST_DB_EXTERNAL: "1"
+      TEST_DB_USER: root
+      TEST_DB_PASS: ci_throwaway_only
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

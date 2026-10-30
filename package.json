@@ -18,11 +18,14 @@
     "format": "biome check --write .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm check:php && pnpm build",
     "prepare": "git rev-parse --git-dir >/dev/null 2>&1 && git config core.hooksPath .githooks || true",
     "dev:web": "vite",
     "deploy:check": "bash scripts/deploy-rsync.sh \"$DEPLOY_TARGET\"",
-    "deploy": "bash scripts/deploy-rsync.sh \"$DEPLOY_TARGET\" --go"
+    "deploy": "bash scripts/deploy-rsync.sh \"$DEPLOY_TARGET\" --go",
+    "lint:php": "find backend -name '*.php' -not -path 'backend/vendor/*' -print0 | xargs -0 -n1 php -l > /dev/null",
+    "test:php": "bash scripts/test-db.sh up && php backend/tests/run.php",
+    "check:php": "pnpm lint:php && pnpm test:php"
   },
   "dependencies": {
     "react": "^19.3.1",
