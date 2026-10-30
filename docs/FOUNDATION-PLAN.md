@@ -23,8 +23,8 @@ L1 scaffold, install, baseline `pnpm check` (DONE: green, 12 tests). L2 planning
 
 | # | Change | Exact target | Evidence I will show | Rollback |
 |---|---|---|---|---|
-| E1 | Create the private GitHub repo and push the first commit (no force, no history from the old repo) | `devgeereact/vitalcare-hub` | `gh repo view` showing private, one commit | repo can be deleted by you |
-| E2 | Enable GitHub Actions on that repo only | `repos/devgeereact/vitalcare-hub/actions/permissions` | API response | disable again |
+| E1 | **DONE 30 Oct 2026.** Created the private GitHub repo and pushed `main` (no force, no history from the old repo) | `devgeereact/vitalcare-hub` | `gh repo view`: PRIVATE, default branch `main`; `git ls-remote` head `fda4bd1` equals local; 3 commits, 1 branch, 0 workflow runs | repo can be deleted by you |
+| E2 | **Currently OFF.** New repos default to Actions ON; I switched it off straight after creation (before the first push) to protect your limited minutes, as your standing rule asks. Enable GitHub Actions on that repo only | `repos/devgeereact/vitalcare-hub/actions/permissions` | API response | disable again |
 | E3 | Set the public repository variable `VITE_CLERK_PUBLISHABLE_KEY` (the `pk_live_` value you gave) | that repo, Variables | `gh variable list` (names only) | delete the variable |
 | E4 | Repository secret `SEMGREP_APP_TOKEN`: **you** enter it in GitHub; I never see it | that repo, Secrets | secret name in the list | delete |
 | E5 | Take a pre-change backup of the live docroot files and `.htaccess` | `~/vitalcare-backups/pre-release-<date>/` (copy only, from `~/vitalcare.uk`) | file count and checksums match | none needed |

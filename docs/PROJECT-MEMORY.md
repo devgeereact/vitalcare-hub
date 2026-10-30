@@ -12,8 +12,8 @@ Care-sector training for individuals and employers, with certificates anyone can
 | Purpose and plan | DONE (owner approved 30 Oct 2026) | `docs/PRD.md`, `docs/ROADMAP.md` |
 | Brand direction | DONE (Clinical Ledger approved) | `docs/DESIGN.md` |
 | Architecture and authorisation map | PARTIAL | written; owner decisions D-006 to D-012 pending |
-| Scaffold | DONE | `pnpm check` green, 12 tests (local) |
-| Repo on GitHub | PLANNED | E1 needs a named go; no `git init` yet |
+| Scaffold | DONE | `pnpm check` green (local) |
+| Repo on GitHub | DONE (E1, 30 Oct 2026) | private `devgeereact/vitalcare-hub`, `main` pushed at `fda4bd1`; Actions OFF until E2 |
 | Server foundation | PLANNED | E5 to E16 each need a named go |
 | Build slices | PLANNED | none started |
 | Production | not live (coming-soon page from an earlier release) | |

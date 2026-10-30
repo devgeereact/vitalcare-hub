@@ -27,7 +27,11 @@
 | Semgrep, GitHub Actions run, real Clerk token, web PHP version | NOT RUN (no GitHub repo, no server change) |
 
 ## External changes made
-None. (Read-only: SSH reads of the three Vitalcare folders, cPanel API listings, Clerk config read, Cloudflare zone read, Companies House read.)
+- **E1 (approved: "go ahead with recomended")**, 30 Oct 2026: created private GitHub repo `devgeereact/vitalcare-hub`; switched Actions OFF for it (new repos default to ON); pushed `main` (3 commits, head `fda4bd1`). No other external change.
+- Read-only reads: ( SSH reads of the three Vitalcare folders, cPanel API listings, Clerk config read, Cloudflare zone read, Companies House read.)
+
+## Unpushed
+Local commits after `fda4bd1` are not pushed: every push needs the owner's go.
 
 ## Blockers
 - Owner decisions D-006 to D-012 in `docs/DECISIONS.md`, especially D-010 (tenant model) before slice 2.
