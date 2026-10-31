@@ -27,7 +27,7 @@ Browser (React PWA, Clerk JS)  --HTTPS-->  Cloudflare  -->  cPanel (LiteSpeed)
 | Files | private folder `~/vitalcare-private/storage`, `files` table, `GET /api/files/{id}` | replaces three storage buckets |
 | Realtime | polling (notifications 60 s; none elsewhere) | replaces Realtime |
 | Scheduled work | cPanel cron running `php ~/vitalcare-private/app/bin/cron.php <task>` | expiry reminders daily 08:00, session reminders every 15 min, email outbox every minute, nightly backup |
-| PDF | server-side at certificate approval, stored privately; library chosen in a spike during R2 | the certificate is a record, so it is generated once and hashed |
+| PDF | server-side, drawn on request from the stored snapshot by `Certificates/CertificatePdf.php` (no dependency; D-018 item 6) | the snapshot never changes, so the same certificate always gives the same bytes; the deploy ships no `vendor/` |
 | Hosting / DNS | cPanel (shared account, other sites present) + Cloudflare Full (strict) | origin lock in the live `.htaccess` is kept |
 | CI | GitHub Actions: lint, typecheck, tests, build, PHP lint and tests, gitleaks, Semgrep; no deploy job | minutes are limited; concurrency cancel, 10 minute timeouts |
 | Delivery | local build, `rsync` without `--delete`, checksum dry run first, `--exclude '/.htaccess'` | no CI deploy |

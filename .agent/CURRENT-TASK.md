@@ -1,5 +1,22 @@
 # Current task
 
+**Goal:** Re-scope to a CMS for the owner and office staff (D-018, owner's decision 31 Oct 2026): no LMS, learners never sign in.
+**Phase:** 05 Build (local only) · **Branch:** `feature/cms` (local, NOT pushed; `main` untouched)
+**Status:** PARTIAL: built and tested locally; nothing pushed, deployed or migrated on the server.
+
+## This session (31 Oct 2026)
+- Commits on `feature/cms`: docs (D-018, PRD, ROADMAP, SCHEMA, API, AUTHORISATION-MAP); migrations 006 to 010; CMS backend; CMS front end and public course pages; docs (AUDIT, RUNBOOK, SECURITY, ARCHITECTURE, this file).
+- Checks: `pnpm check` PASS before every commit (1,294 PHP assertions in 20 suites, 114 front-end tests); 24/24 mutations caught; HTTP smoke and a 375 px browser check of the public pages. Details and NOT TESTED list: `docs/AUDIT.md` (31 Oct entry).
+- No server, Clerk, Cloudflare or GitHub change. Throwaway database for the browser check dropped.
+
+## Next
+1. Owner reviews the branch and the D-018 "chosen" items; then approves a push (named go) and a PR into `main`.
+2. Owner enters and publishes the course facts in the CMS (or supplies them); approves certificate wording, logo and signature for the PDF; supplies the accreditation statement and its proof if any.
+3. Before any deploy: pinned backup, migrations 006 to 010 through the gate (`activate-api`), then a real email-code sign-in test into `/admin` (NOT TESTED so far).
+4. Remaining NOT TESTED items in `docs/AUDIT.md`.
+
+## Earlier record (30 Oct 2026)
+
 **Goal:** Plans approved (decisions D-006, D-008, D-010 to D-012 approved 30 Oct 2026). Slice 1 (identity and authorisation core) built locally. No external change made; every E-item in `docs/FOUNDATION-PLAN.md` still needs its own named go.
 **Phase:** 05 Build (local only) · **Slice:** 1 (done locally) and 2 (started)
 **Status:** PARTIAL

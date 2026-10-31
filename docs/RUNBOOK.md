@@ -60,6 +60,14 @@ The sender is the dedicated mailbox `noreply@vitalcare.uk` (created 30 Oct 2026 
 
 Contact-form messages are queued in `outbox_email`; `bin/send-outbox.php` sends them every two minutes (cron) through the server's own SMTP on port 465 with certificate checking. It does nothing, silently, until the SMTP password is set. A failed send is retried after 1, 5, 15 and 60 minutes and then 4 hours; after 5 failures the row is marked `failed` and shown in the log. Only one sender runs at a time.
 
+## Renewal reminders (D-018)
+
+**The existing cron entry needs no change.** `bin/send-outbox.php` (every two minutes) now first queues due certificate reminders, then sends the outbox as before. Each certificate gets at most one email per stage (60, 30 and 7 days before its expiry date), enforced by the primary key of `certificate_reminders`; running the job again, or twice at once, queues nothing new (a named lock, `vitalcare_reminders`, lets only one run work). Only the most urgent due stage is sent, so a certificate issued with 20 days left gets the 30-day reminder only.
+
+Who gets one: the person, if they have an email address, are active and have not opted out; and the organisation's contact, if the organisation is active and "copy renewal reminders" is ticked. Nobody is reminded about a revoked certificate, an expired one, one with no expiry, or one replaced by a later certificate for the same course. Replies go to the office address. Like all mail, nothing is queued or sent until the SMTP settings are complete.
+
+To see what was sent: the Renewals screen shows the stages per certificate; the log line `reminders certificates=N emails=M` appears in `outbox.log` when any were queued.
+
 ## Old project items kept
 
 The verified dump of the previous application's database is in `~/vitalcare-backups/legacy/` (0700), with a copy on the owner's Mac. To restore it into a scratch database, remove the `DEFINER=` clauses on the way in: `gzip -dc db.sql.gz | sed -E 's/DEFINER=`[^`]*`@`[^`]*`//g' | mariadb <scratch>`.
