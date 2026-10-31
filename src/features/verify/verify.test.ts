@@ -64,3 +64,31 @@ describe("formatDate", () => {
     expect(formatDate("2026-12-31")).toBe("31 December 2026");
   });
 });
+
+describe("parseVerify: revoked (D-018)", () => {
+  const revoked = {
+    code: "ABCD-EFGH-JKMN",
+    courseTitle: "Basic Life Support",
+    completedOn: "2026-01-10",
+    revokedOn: "2026-10-31",
+    issuer: "Vitalcare Training Hub Ltd",
+  };
+
+  it("accepts a revoked answer and keeps only its five fields", () => {
+    const r = parseVerify({
+      status: "revoked",
+      certificate: { ...revoked, learnerName: "Lee Learner", reason: "x" },
+    });
+    expect(r.status).toBe("revoked");
+    expect(r.status === "revoked" && Object.keys(r.certificate).sort()).toEqual(
+      Object.keys(revoked).sort(),
+    );
+    expect(JSON.stringify(r)).not.toContain("Lee Learner");
+  });
+
+  it("rejects a revoked answer with a bad date", () => {
+    expect(() =>
+      parseVerify({ status: "revoked", certificate: { ...revoked, revokedOn: "yesterday" } }),
+    ).toThrow();
+  });
+});

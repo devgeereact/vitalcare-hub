@@ -9,13 +9,19 @@ export function HomePage() {
       <hr className="rule" />
       <p>Care training with a record you can check.</p>
       <p>
-        This site is being rebuilt. Courses and certificate checking will be added here as they are
-        ready. To book training or ask a question now, contact us.
+        See our courses, check a certificate by its code, or contact us to book training or ask a
+        question. You do not need an account.
       </p>
       <p>{claim("contact_details")}</p>
       <div className="actions">
-        <Link className="btn" to="/sign-in">
-          Sign in
+        <Link className="btn" to="/courses">
+          Courses
+        </Link>
+        <Link className="btn btn--quiet" to="/verify">
+          Check a certificate
+        </Link>
+        <Link className="btn btn--quiet" to="/contact">
+          Contact us
         </Link>
       </div>
     </>

@@ -12,6 +12,7 @@ import { ClerkSession } from "@/features/auth/ClerkSession";
 import { SessionContext } from "@/features/auth/session";
 import { CLERK_PUBLISHABLE_KEY } from "@/shared/config";
 import "./style.css";
+import "./admin.css";
 
 const root = document.getElementById("root");
 if (!root) throw new Error("Missing #root element in index.html");

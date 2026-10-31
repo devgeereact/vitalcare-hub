@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { type ApiError, apiFetch, apiUrl } from "./api";
+import { type ApiError, apiFetch, apiUrl, queryString } from "./api";
 
 describe("apiUrl", () => {
   it("joins the API root and a simple path", () => {
@@ -9,7 +9,15 @@ describe("apiUrl", () => {
     );
   });
 
+  it("allows a dotted file segment such as people.csv", () => {
+    expect(apiUrl("/api", "admin/export/people.csv")).toBe("/api/admin/export/people.csv");
+  });
+
   it.each([
+    "admin/..",
+    "admin/./x",
+    "a..b",
+    ".hidden",
     "../private",
     "https://evil.example/x",
     "//evil.example",
@@ -23,6 +31,15 @@ describe("apiUrl", () => {
 
   it("rejects a protocol-relative base", () => {
     expect(() => apiUrl("//evil.example", "x")).toThrow();
+  });
+});
+
+describe("queryString", () => {
+  it("encodes values and leaves out empty ones", () => {
+    expect(queryString({ q: "a&b=c", page: 2, status: "", x: undefined })).toBe(
+      "?q=a%26b%3Dc&page=2",
+    );
+    expect(queryString({})).toBe("");
   });
 });
 

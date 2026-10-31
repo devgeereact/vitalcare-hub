@@ -121,4 +121,25 @@ describe("VerifyPage", () => {
     await screen.findByText("Not issued");
     expect(String(f.mock.calls[0]?.[0])).toBe("/api/verify/ADMINX1");
   });
+
+  it("shows Revoked in words, with no name", async () => {
+    vi.stubGlobal(
+      "fetch",
+      reply({
+        status: "revoked",
+        certificate: {
+          code: "ABCD-EFGH-JKMN",
+          courseTitle: "Basic Life Support",
+          completedOn: "2026-01-10",
+          revokedOn: "2026-10-31",
+          issuer: "Vitalcare Training Hub Ltd",
+        },
+      }),
+    );
+    renderAt("/verify/ABCDEFGHJKMN");
+    expect(await screen.findByText("Revoked")).toBeInTheDocument();
+    expect(screen.getByText(/has been revoked\. It is no longer valid/)).toBeInTheDocument();
+    expect(screen.getByText("31 October 2026")).toBeInTheDocument();
+    expect(screen.queryByText("Name")).not.toBeInTheDocument();
+  });
 });

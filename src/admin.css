@@ -1,0 +1,365 @@
+/* Office system (CMS) and course pages. Same Clinical Ledger tokens as style.css; nothing new is coloured
+   by hue alone: every badge carries a word. */
+
+.page--admin {
+  max-width: 80rem;
+}
+
+.admin-header {
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+}
+
+.admin-header__inner {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-5);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-search {
+  display: flex;
+  gap: var(--space-2);
+  flex: 1 1 18rem;
+  max-width: 32rem;
+}
+
+.admin-search .input {
+  max-width: none;
+}
+
+.admin-user {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9375rem;
+}
+
+.admin-user .hint {
+  margin: 0;
+}
+
+.admin-nav {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 0 var(--space-4) var(--space-2);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-4);
+}
+
+.admin-nav a {
+  padding: var(--space-2) 0;
+  text-decoration: none;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.admin-nav a[aria-current="page"] {
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-decoration-thickness: 3px;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.4;
+  padding: 0 var(--space-2);
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+
+.badge--ok {
+  color: var(--success-ink);
+  background: var(--success-bg);
+}
+
+.badge--warn {
+  color: var(--warning-ink);
+  background: var(--warning-bg);
+}
+
+.badge--error {
+  color: var(--danger-ink);
+  background: var(--danger-bg);
+}
+
+.badge--info {
+  color: var(--navy);
+  background: var(--navy-tint);
+}
+
+.table-wrap {
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+}
+
+.table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.table-wrap th,
+.table-wrap td {
+  text-align: left;
+  vertical-align: top;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--line);
+}
+
+.table-wrap th {
+  color: var(--ink-2);
+  font-weight: 600;
+  background: var(--surface);
+}
+
+.table-wrap tr:last-child td {
+  border-bottom: 0;
+}
+
+.panel {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+.panel--danger {
+  border-color: var(--danger-ink);
+}
+
+.panel h2,
+.h3 {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 1.125rem;
+  color: var(--navy);
+}
+
+.two-col {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 60rem) {
+  .two-col {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.stats {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-5);
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+}
+
+.stats a {
+  display: block;
+  padding: var(--space-3) var(--space-4);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--gold);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.stats strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 400;
+  color: var(--navy);
+}
+
+.history,
+.plain,
+.cards,
+.checklist,
+.course-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.history li,
+.cards li {
+  border-top: 1px solid var(--line);
+  padding: var(--space-3) 0;
+}
+
+.history__meta {
+  color: var(--ink-2);
+  font-size: 0.875rem;
+  margin-bottom: var(--space-1);
+}
+
+.history__body,
+.pre-line {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.plain li {
+  margin-bottom: var(--space-2);
+}
+
+.checklist li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--line);
+}
+
+.checklist input,
+.field--check input {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--navy);
+}
+
+.is-overdue label {
+  color: var(--danger-ink);
+}
+
+.checklist__subject {
+  margin-left: auto;
+}
+
+.field--check {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.field--check label {
+  margin: 0;
+  font-weight: 500;
+}
+
+.field--check .hint {
+  flex-basis: 100%;
+}
+
+.add-box {
+  margin-bottom: var(--space-5);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+}
+
+.add-box summary,
+.panel summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--navy);
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+}
+
+.add-box[open] summary {
+  margin-bottom: var(--space-3);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  align-items: flex-end;
+}
+
+.list-search {
+  margin-bottom: var(--space-4);
+}
+
+.list-search label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: var(--space-1);
+}
+
+.inline {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.crumbs {
+  font-size: 0.9375rem;
+  margin-bottom: var(--space-2);
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+select.input {
+  max-width: 24rem;
+}
+
+.input--compact {
+  min-height: 2.5rem;
+  padding: var(--space-1) var(--space-2);
+  width: auto;
+}
+
+.btn--small {
+  min-height: 2.5rem;
+  padding: var(--space-1) var(--space-3);
+  font-size: 0.9375rem;
+}
+
+.btn--danger {
+  background: var(--danger-ink);
+  border-color: var(--danger-ink);
+}
+
+.btn--danger:hover {
+  background: #991b1b;
+}
+
+.record-form textarea.input {
+  min-height: 6rem;
+}
+
+.course-list {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.course-list .card {
+  max-width: none;
+}
+
+.course-list .hint {
+  margin: 0;
+}

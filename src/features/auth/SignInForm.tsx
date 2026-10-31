@@ -50,7 +50,7 @@ export function SignInForm() {
       if (signIn.status !== "complete") return setError(CODE_WRONG);
       await signIn.finalize({
         navigate: ({ decorateUrl }) => {
-          const url = decorateUrl("/app");
+          const url = decorateUrl("/admin");
           if (url.startsWith("http")) window.location.href = url;
           else navigate(url);
         },

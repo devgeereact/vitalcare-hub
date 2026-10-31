@@ -1,9 +1,10 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet } from "react-router-dom";
 import { useSession } from "@/features/auth/session";
 import { claim } from "@/shared/content/claims";
 import { UpdatePrompt } from "./UpdatePrompt";
 
-/** Shell: skip link, header with the supplied logo, main landmark, footer with the legal entity line. */
+/** Shell: skip link, header with the supplied logo, main landmark, footer with the legal entity line.
+ * Learners never sign in (D-018); the only sign-in link is the staff one in the footer. */
 export function Layout() {
   const { status } = useSession();
   return (
@@ -25,13 +26,10 @@ export function Layout() {
             <NavLink to="/" end>
               Home
             </NavLink>
+            <NavLink to="/courses">Courses</NavLink>
             <NavLink to="/verify">Check a certificate</NavLink>
             <NavLink to="/contact">Contact</NavLink>
-            {status === "signed-in" ? (
-              <NavLink to="/app">Your account</NavLink>
-            ) : (
-              <NavLink to="/sign-in">Sign in</NavLink>
-            )}
+            {status === "signed-in" && <NavLink to="/admin">Office</NavLink>}
           </nav>
         </div>
       </header>
@@ -43,6 +41,11 @@ export function Layout() {
         <div className="site-footer__inner">
           <p>{claim("company_identity")}</p>
           <p>{claim("contact_details")}</p>
+          {status !== "signed-in" && (
+            <p>
+              <Link to="/sign-in">Staff sign in</Link>
+            </p>
+          )}
         </div>
       </footer>
     </>

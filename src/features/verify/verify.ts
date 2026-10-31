@@ -10,8 +10,18 @@ export type VerifiedCertificate = {
   issuer: string;
 };
 
+/** A revoked certificate: deliberately no name and no reason (D-018). */
+export type RevokedCertificate = {
+  code: string;
+  courseTitle: string;
+  completedOn: string;
+  revokedOn: string;
+  issuer: string;
+};
+
 export type VerifyResult =
   | { status: "not_issued" }
+  | { status: "revoked"; certificate: RevokedCertificate }
   | { status: "valid" | "expired"; certificate: VerifiedCertificate };
 
 /** Keeps only letters and digits, so the code is always a safe single path segment. */
@@ -26,6 +36,27 @@ export function parseVerify(data: unknown): VerifyResult {
   const d = data as { status?: unknown; certificate?: Record<string, unknown> } | null;
   if (d?.status === "not_issued") return { status: "not_issued" };
   const c = d?.certificate;
+  if (
+    d?.status === "revoked" &&
+    c &&
+    typeof c.code === "string" &&
+    typeof c.courseTitle === "string" &&
+    isDate(c.completedOn) &&
+    isDate(c.revokedOn) &&
+    typeof c.issuer === "string"
+  ) {
+    // Only these fields are kept, so nothing else the server might send can reach the page.
+    return {
+      status: "revoked",
+      certificate: {
+        code: c.code,
+        courseTitle: c.courseTitle,
+        completedOn: c.completedOn,
+        revokedOn: c.revokedOn,
+        issuer: c.issuer,
+      },
+    };
+  }
   if (
     (d?.status === "valid" || d?.status === "expired") &&
     c &&

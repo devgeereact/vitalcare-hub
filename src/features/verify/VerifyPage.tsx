@@ -91,9 +91,27 @@ export function VerifyPage() {
           </div>
         )}
 
-        {state.kind === "result" && state.result.status !== "not_issued" && (
-          <Result result={state.result} />
+        {state.kind === "result" && state.result.status === "revoked" && (
+          <div className="notice notice--error">
+            <strong>Revoked</strong>
+            {`This certificate was issued by ${state.result.certificate.issuer} and has been revoked. It is no longer valid.`}
+            <dl className="facts" style={{ marginTop: "var(--space-3)" }}>
+              <dt>Course</dt>
+              <dd>{state.result.certificate.courseTitle}</dd>
+              <dt>Completed on</dt>
+              <dd>{formatDate(state.result.certificate.completedOn)}</dd>
+              <dt>Revoked on</dt>
+              <dd>{formatDate(state.result.certificate.revokedOn)}</dd>
+              <dt>Certificate code</dt>
+              <dd>{state.result.certificate.code}</dd>
+            </dl>
+          </div>
         )}
+
+        {state.kind === "result" &&
+          (state.result.status === "valid" || state.result.status === "expired") && (
+            <Result result={state.result} />
+          )}
 
         {state.kind === "rate-limited" && (
           <div className="notice notice--error" role="alert">
@@ -114,7 +132,7 @@ export function VerifyPage() {
   );
 }
 
-function Result({ result }: { result: Extract<VerifyResult, { certificate: unknown }> }) {
+function Result({ result }: { result: Extract<VerifyResult, { status: "valid" | "expired" }> }) {
   const c = result.certificate;
   const valid = result.status === "valid";
   return (
