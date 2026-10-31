@@ -11,6 +11,7 @@
 #      requests switched off. The pipeline can upload, and cannot remove or rename anything.
 #   2. one of these verbs, each taking a 40-character commit id (or a rollback timestamp):
 #        verify <id>           check the uploaded release: checksums, safe archive contents, php -l, markers
+#                              (api.tar may hold src bin migrations public assets tools RELEASE; assets = fonts only)
 #        activate-api <id>     pinned backup + migrations if any are pending, then code, then health check
 #        activate-site <id>    upload the built site over the docroot (no deletes, entry files last)
 #        activate-htaccess <id> merge our rules into the live .htaccess (fail-closed, origin lock untouched)
@@ -146,10 +147,12 @@ wait_for_release() {
 }
 
 app_sync() {
-  # $1 = source folder holding src bin migrations public; copy by checksum, never deleting.
+  # $1 = source folder holding src bin migrations public (and assets, from releases that have it);
+  # copy by checksum, never deleting. A rollback copy made before assets/ existed simply has none.
   local from="$1"
   local d
-  for d in src bin migrations; do
+  for d in src bin migrations assets; do
+    if [ "$d" = "assets" ] && [ ! -d "$from/assets" ]; then continue; fi
     mkdir -p "$APP/$d"
     rsync -rlt --checksum "$from/$d/" "$APP/$d/"
   done
@@ -211,11 +214,20 @@ do_verify() {
   tar -xf "$inc/api.tar" -C "$tmp/api" --no-same-owner --no-same-permissions
   local top
   for top in $(ls -A "$tmp/api"); do
-    case "$top" in src|bin|migrations|public|tools|RELEASE) ;; *) die "api.tar has an unexpected top-level entry: $top" ;; esac
+    case "$top" in src|bin|migrations|public|assets|tools|RELEASE) ;; *) die "api.tar has an unexpected top-level entry: $top" ;; esac
   done
   for f in src/Autoload.php src/Bootstrap.php bin/migrate.php bin/backup.sh public/index.php; do
     [ -f "$tmp/api/$f" ] || die "api.tar is missing $f"
   done
+  # The certificate PDF needs its embedded fonts (backend/assets/fonts); a release that has one without the other is incomplete.
+  if [ -f "$tmp/api/src/Certificates/CertificatePdf.php" ]; then
+    for f in assets/fonts/NotoSans-Regular.ttf assets/fonts/NotoSans-Bold.ttf assets/fonts/OFL.txt; do
+      [ -f "$tmp/api/$f" ] || die "api.tar is missing $f (the certificate fonts)"
+    done
+  fi
+  if [ -d "$tmp/api/assets" ] && find "$tmp/api/assets" -type f ! \( -name '*.ttf' -o -name '*.txt' \) | grep -q .; then
+    die "api.tar assets/ may hold only fonts (.ttf) and their licence text (.txt)"
+  fi
   [ "$(cat "$tmp/api/RELEASE" 2>/dev/null)" = "$ID" ] || die "api.tar was built for a different commit"
   local bad=0 p
   while IFS= read -r -d '' p; do "$PHP" -l "$p" >/dev/null 2>&1 || { bad=1; say "syntax error: ${p#"$tmp/api/"}" >&2; }; done < <(find "$tmp/api" -name '*.php' -print0)
@@ -264,7 +276,7 @@ do_activate_api() {
   ts="$(date -u +%Y%m%d-%H%M%S)"; rb="$ROLLBACK/api-$ts"
   mkdir -p "$rb"
   local d
-  for d in src bin migrations public; do [ -d "$APP/$d" ] && cp -a "$APP/$d" "$rb/$d"; done
+  for d in src bin migrations public assets; do if [ -d "$APP/$d" ]; then cp -a "$APP/$d" "$rb/$d"; fi; done
   [ -f "$APP/RELEASE" ] && cp -a "$APP/RELEASE" "$rb/RELEASE"
   say "rollback copy: api-$ts"
 

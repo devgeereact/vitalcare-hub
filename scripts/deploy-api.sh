@@ -8,7 +8,7 @@
 #   DOCROOT      optional env: the web root; default REMOTE_HOME/vitalcare.uk
 #
 # What it does, and only this:
-#  - copies backend/src, backend/bin, backend/migrations and backend/public/index.php into
+#  - copies backend/src, backend/bin, backend/migrations, backend/assets (certificate fonts) and backend/public/index.php into
 #    REMOTE_HOME/vitalcare-private/app/ (outside every web root), by checksum, never deleting anything;
 #  - writes the shim DOCROOT/api/index.php (no secrets in it) that points at the private code;
 #  - writes DOCROOT/api/.htaccess, which pins the PHP version for the API folder ONLY (default PHP 8.4,
@@ -55,8 +55,8 @@ RS=(rsync -rlt --checksum --itemize-changes --exclude '*.test.*' --exclude 'test
 [ "$MODE" = "--go" ] && echo "== DEPLOY to $HOST:$APP" || echo "== DRY RUN (checksum). Nothing is changed. Target: $HOST:$APP"
 
 # Folders are created only for a real deploy: a dry run must change nothing, folders included.
-[ "$MODE" = "--go" ] && run "mkdir -p '$APP/src' '$APP/bin' '$APP/migrations' '$APP/public'"
-for pair in "backend/src/:$APP/src/" "backend/bin/:$APP/bin/" "backend/migrations/:$APP/migrations/"; do
+[ "$MODE" = "--go" ] && run "mkdir -p '$APP/src' '$APP/bin' '$APP/migrations' '$APP/assets' '$APP/public'"
+for pair in "backend/src/:$APP/src/" "backend/bin/:$APP/bin/" "backend/migrations/:$APP/migrations/" "backend/assets/:$APP/assets/"; do
   "${RS[@]}" "${pair%%:*}" "$(DEST "${pair#*:}")"
 done
 # The single front-controller file is synced as a directory with a filter. GNU rsync (Linux, the server and CI)

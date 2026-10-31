@@ -2,6 +2,29 @@
 
 One audit file for this project. Every audit, check or review adds a dated section at the top; nothing is rewritten. Open work lives in `.agent/CURRENT-TASK.md`.
 
+## 31 October 2026: certificate PDF fonts (D-018 item 6), branch `feature/cms`, local only
+
+- **Scope:** names outside Western European letters printed as "?" (WinAnsi base fonts; NOT TESTED list of the CMS build below). Owner approved the fix before launch. Now: Noto Sans Regular and Bold 2.015 (SIL OFL 1.1, `backend/assets/fonts/` with `OFL.txt`), embedded as subsetted Type0 / CIDFontType2 fonts, Identity-H, widths, CID-to-glyph map and ToUnicode; names normalised to NFC; combining marks without a precomposed letter centred over their letter; a missing glyph prints the font's visible box. No Composer, no new dependency (`TrueTypeFont.php` reads and subsets the font). Deploy: `assets/` added to `build-release.sh`, `deploy-api.sh` and the gate's allow-list. Nothing pushed or deployed; no server, Clerk or GitHub setting touched. Test database: the project's throwaway MariaDB on 127.0.0.1:33175 only.
+
+### Evidence (DONE, seen 31 Oct 2026)
+
+| Check | Result |
+|---|---|
+| `pnpm check` (content, Biome, typecheck, Vitest 114, PHP lint, PHP suites, backup, deploy gate, scripts, build) | PASS, exit 0, before the commit |
+| PHP suites | 1,393 assertions in 21 suites. New suite 155 (103): one name each in Latin (Polish, Romanian, German, French), Latin Extended (Czech, Turkish, Icelandic, Maltese), Vietnamese, Yoruba with tone marks on dotted vowels, Igbo, Greek, Cyrillic: every character has a glyph, the name and course copy back out exactly through ToUnicode, no "?" or U+FFFD, identical bytes on a second render, exact xref offsets, trailer and stream lengths, both fonts embedded as CIDFontType2 subsets whose every used glyph has an outline, under 60 KB, and `qpdf --check` clean. Also: NFD input gives the same bytes as NFC; Latin A, Greek Alpha and Cyrillic A copy out as themselves; a tone mark on a capital is raised and moved over its letter; Arabic, Hebrew, Chinese, Japanese, Korean, Devanagari and Thai are reported by `missing()`, drawn as the .notdef box, still copy out as the real characters, and stay well formed. Suite 150's PDF checks rewritten to read text through ToUnicode (77) |
+| Mutations of `CertificatePdf.php` (local, restored byte-identical) | 3 of 3 caught: NFC switched off; missing glyphs mapped to a real glyph; mark not moved over its letter |
+| Deploy pipeline tests | 98 (new: `api.tar` with the PDF generator but no fonts refused; a non-font file in `assets/` refused; fonts and licence installed beside `src/`; a rollback copy made before `assets/` existed restores without removing the fonts). `deploy-api.sh` test: fonts copied (42) |
+| Rendered and looked at | `pdftoppm` (poppler 26.10) and `qpdf` (both installed with Homebrew for this check) at 110 and 300 dpi, and macOS Quick Look (`qlmanage`): "Łukasz Ştefan-Nguyễn", "Ọlá Ẹ̀kọ́ Ọ̀ṣun", "Ngozi Ụzọ Ịfẹ́ ṅ", "Αλέξανδρος Παπαδόπουλος", "Владимир Ёжиков-Щукин" all correct, marks over the right letters, grave raised over capitals; an Arabic and Chinese name shows empty boxes. `pdffonts`: both fonts `CID TrueType`, `Identity-H`, emb yes, sub yes, uni yes. `pdftotext` gives the names back. Samples in `.local-test/pdf-sample/` (not in Git) |
+| Size | a certificate for "Łukasz Ştefan-Nguyễn" is 36,245 bytes (two font subsets of about 15 KB each, compressed); the fonts in the repository are 621,572 and 631,484 bytes |
+
+### NOT TESTED
+
+- PDF in Adobe Reader, Chrome's viewer and on paper (poppler and Apple's renderer only).
+- Whether the server's web PHP 8.4 has `intl`. Without it names are drawn as stored (no NFC); a decomposed name then still prints, with its marks placed by the box rule. Owner check: `php -m | grep intl` with `/opt/alt/php84/usr/bin/php`, or the cPanel PHP extensions page.
+- The new gate on the server: it is not installed yet (DEPLOYMENT.md, one-off install). If a copy was installed before this change, it must be re-installed before the next deploy or it refuses the new `api.tar`.
+- Right-to-left, CJK, Indic and Thai names (out of scope, D-018 item 6): they print as boxes. No screen warns the office yet; `CertificatePdf::missing()` exists for that.
+- Typographic quality of stacked marks (more than one mark above a letter) and marks on tall lower-case letters: placed by a simple box rule, no OpenType positioning.
+
 ## 31 October 2026: CMS build (D-018), branch `feature/cms`, local only
 
 - **Scope:** re-scope from a learning platform to a CMS for the owner (`super_admin`) and office staff (`admin`). Docs, migrations 006 to 010, backend, front end, PDF. Nothing pushed, deployed or applied to any server database; no Clerk, Cloudflare or GitHub setting touched.

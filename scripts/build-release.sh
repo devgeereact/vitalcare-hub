@@ -30,6 +30,8 @@ A="$WORK/api"; mkdir -p "$A/public" "$A/tools"
 rsync -rlt --exclude '*.test.*' --exclude 'tests/' --exclude '.DS_Store' "$BE"/src/ "$A/src/"
 rsync -rlt --exclude '.DS_Store' "$BE"/bin/ "$A/bin/"
 rsync -rlt --exclude '.DS_Store' "$BE"/migrations/ "$A/migrations/"
+# Fonts embedded in the certificate PDF, with their licence (backend/assets/fonts; D-018 item 6).
+if [ -d "$BE/assets" ]; then rsync -rlt --exclude '.DS_Store' "$BE"/assets/ "$A/assets/"; fi
 cp "$BE"/public/index.php "$A/public/index.php"
 cp scripts/merge-htaccess.py "$A/tools/merge-htaccess.py"
 printf '%s\n' "$ID" > "$A/RELEASE"

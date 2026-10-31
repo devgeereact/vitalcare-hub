@@ -7,10 +7,17 @@ namespace Vitalcare\Certificates;
 /**
  * Draws one certificate as a single-page A4 landscape PDF 1.4, with no dependencies (D-018 item 6).
  *
- * Only the standard PDF fonts Helvetica and Helvetica-Bold are used (no embedding, no images), with
- * WinAnsi encoding: characters outside Windows-1252 print as "?". The output depends only on the stored
- * snapshot, so the same certificate always gives the same bytes. Wording, logo and signature are
- * PLACEHOLDERS until the owner approves them (docs/AUDIT.md, owner actions).
+ * Text is set in Noto Sans Regular and Bold (SIL Open Font License 1.1, backend/assets/fonts), embedded as
+ * subsetted CID fonts (Type0 / CIDFontType2, Identity-H) with a ToUnicode map, so names in Latin, Latin
+ * Extended, Vietnamese, Yoruba and Igbo, Greek and Cyrillic print correctly and can be copied and searched.
+ * Names are normalised to NFC first. A combining mark the font has no precomposed letter for is placed over
+ * (or under) the letter before it by a simple box-centring rule; there is no OpenType shaping, so Arabic,
+ * Hebrew, CJK and Indic scripts are NOT supported: a character the font lacks prints as a visible empty box
+ * (the font's .notdef glyph), never as "?", and still copies as the right character. See missing().
+ *
+ * The output depends only on the stored snapshot and the font files, so the same certificate always gives
+ * the same bytes. Wording, logo and signature are PLACEHOLDERS until the owner approves them
+ * (docs/AUDIT.md, owner actions).
  */
 final class CertificatePdf
 {
@@ -21,54 +28,118 @@ final class CertificatePdf
     private const INK = '0.059 0.090 0.165';
     private const ISSUER = 'Vitalcare Training Hub Ltd';
     private const ISSUER_LINE = 'Company number 15718997, registered in England and Wales';
+    /** Font resource name => file under backend/assets/fonts, and a stem width for the descriptor. */
+    private const FONTS = ['F1' => ['NotoSans-Regular.ttf', 80], 'F2' => ['NotoSans-Bold.ttf', 140]];
 
-    // Adobe AFM widths for character codes 32 to 126 (1/1000 em). Anything above 126 uses 556.
-    private const HELVETICA = '278 278 355 556 556 889 667 191 333 333 389 584 278 333 278 278 556 556 556 556 556 556 556 556 556 556 278 278 584 584 584 556 1015 667 667 722 722 667 611 778 722 278 500 667 556 833 722 778 667 778 722 667 611 722 667 944 667 667 611 278 278 278 469 556 333 556 556 500 556 556 278 556 556 222 222 500 222 833 556 556 556 556 333 500 278 556 500 722 500 500 500 334 260 334 584';
-    private const HELVETICA_BOLD = '278 333 474 556 556 889 722 238 333 333 389 584 278 333 278 278 556 556 556 556 556 556 556 556 556 556 333 333 584 584 584 611 975 722 722 722 722 667 611 778 722 278 556 722 611 833 722 778 667 778 722 667 611 722 667 944 667 667 611 333 278 333 584 556 333 556 611 556 611 556 333 611 611 278 278 556 278 889 611 611 611 611 389 556 333 611 556 778 556 556 500 389 280 389 584';
+    /** @var array<string,TrueTypeFont> loaded once per process */
+    private static array $loaded = [];
 
-    /** @var array<string,list<int>> */
-    private static array $widths = [];
+    /** @var array<string,array<int,int>> per font: code point => CID (CIDs are given out from 1 in order of first use) */
+    private array $cids = ['F1' => [], 'F2' => []];
 
     /**
      * @param array{code:string,learnerName:string,courseTitle:string,hours:?float,completedOn:string,issuedOn:?string,expiresOn:?string} $c
      */
     public static function render(array $c): string
     {
+        return (new self())->draw($c);
+    }
+
+    /** Folder holding the font files and their licence. */
+    public static function fontDir(): string
+    {
+        return dirname(__DIR__, 2) . '/assets/fonts';
+    }
+
+    public static function font(string $font): TrueTypeFont
+    {
+        if (!isset(self::FONTS[$font])) {
+            throw new \InvalidArgumentException("Unknown certificate font $font");
+        }
+        return self::$loaded[$font] ??= new TrueTypeFont(self::fontDir() . '/' . self::FONTS[$font][0]);
+    }
+
+    /** The text as it will be drawn: control characters become spaces, then Unicode NFC. */
+    public static function normalise(string $text): string
+    {
+        $clean = (string) preg_replace('/[\x00-\x1f\x7f]/u', ' ', $text);
+        if (class_exists(\Normalizer::class)) {
+            $n = \Normalizer::normalize($clean, \Normalizer::FORM_C);
+            if (is_string($n)) {
+                return $n;
+            }
+        }
+        return $clean;
+    }
+
+    /**
+     * Characters of the text that the certificate font cannot draw (they print as an empty box).
+     *
+     * @return list<string>
+     */
+    public static function missing(string $text): array
+    {
+        $f1 = self::font('F1');
+        $f2 = self::font('F2');
+        $out = [];
+        foreach (self::codepoints($text) as $cp) {
+            $ch = mb_chr($cp, 'UTF-8');
+            if (($f1->glyphId($cp) === 0 || $f2->glyphId($cp) === 0) && !in_array($ch, $out, true)) {
+                $out[] = $ch;
+            }
+        }
+        return $out;
+    }
+
+    /** Text width in points for a font ('F1' regular, 'F2' bold) at a size. */
+    public static function width(string $text, string $font, float $size): float
+    {
+        $f = self::font($font);
+        $sum = 0;
+        foreach (self::codepoints($text) as $cp) {
+            $sum += $f->advance($f->glyphId($cp));
+        }
+        return $sum * $size / $f->unitsPerEm;
+    }
+
+    /** @param array{code:string,learnerName:string,courseTitle:string,hours:?float,completedOn:string,issuedOn:?string,expiresOn:?string} $c */
+    private function draw(array $c): string
+    {
         $ops = [];
         // Frame: navy outer border, gold inner rule.
         $ops[] = self::NAVY . ' RG 3 w 24 24 ' . (self::W - 48) . ' ' . (self::H - 48) . ' re S';
         $ops[] = self::GOLD . ' RG 1 w 34 34 ' . (self::W - 68) . ' ' . (self::H - 68) . ' re S';
 
-        $ops[] = self::centre('VITALCARE TRAINING HUB', 'F2', 13, 515, self::NAVY);
-        $ops[] = self::centre('Certificate', 'F2', 40, 452, self::NAVY);
-        $ops[] = self::centre('This certifies that', 'F1', 14, 408, self::INK);
+        $ops[] = $this->centre('VITALCARE TRAINING HUB', 'F2', 13, 515, self::NAVY);
+        $ops[] = $this->centre('Certificate', 'F2', 40, 452, self::NAVY);
+        $ops[] = $this->centre('This certifies that', 'F1', 14, 408, self::INK);
         foreach (self::fit($c['learnerName'], 'F2', 30, 700, 14) as [$line, $size, $dy]) {
-            $ops[] = self::centre($line, 'F2', $size, 364 - $dy, self::NAVY);
+            $ops[] = $this->centre($line, 'F2', $size, 364 - $dy, self::NAVY);
         }
-        $ops[] = self::centre('completed the course', 'F1', 14, 322, self::INK);
+        $ops[] = $this->centre('completed the course', 'F1', 14, 322, self::INK);
         foreach (self::fit($c['courseTitle'], 'F2', 22, 700, 12) as [$line, $size, $dy]) {
-            $ops[] = self::centre($line, 'F2', $size, 288 - $dy, self::NAVY);
+            $ops[] = $this->centre($line, 'F2', $size, 288 - $dy, self::NAVY);
         }
         $on = 'on ' . self::date($c['completedOn']);
         if ($c['hours'] !== null) {
             $h = rtrim(rtrim(number_format($c['hours'], 2, '.', ''), '0'), '.');
             $on .= ' (' . $h . ($h === '1' ? ' hour' : ' hours') . ')';
         }
-        $ops[] = self::centre($on, 'F1', 14, 246, self::INK);
-        $ops[] = self::centre(
+        $ops[] = $this->centre($on, 'F1', 14, 246, self::INK);
+        $ops[] = $this->centre(
             $c['expiresOn'] !== null ? 'Valid until ' . self::date($c['expiresOn']) : 'No expiry date is recorded for this course',
             'F1', 12, 222, self::INK,
         );
         $ops[] = self::GOLD . ' RG 2 w 341 196 m 501 196 l S';
 
         $display = CertificateCode::display($c['code']);
-        $ops[] = self::text('Certificate code ' . $display, 'F2', 12, 70, 124, self::NAVY);
+        $ops[] = $this->text('Certificate code ' . $display, 'F2', 12, 70, 124, self::NAVY);
         if ($c['issuedOn'] !== null) {
-            $ops[] = self::text('Issued on ' . self::date($c['issuedOn']), 'F1', 10, 70, 107, self::INK);
+            $ops[] = $this->text('Issued on ' . self::date($c['issuedOn']), 'F1', 10, 70, 107, self::INK);
         }
-        $ops[] = self::text('Check it at vitalcare.uk/verify/' . $c['code'], 'F1', 10, 70, 91, self::INK);
-        $ops[] = self::text(self::ISSUER, 'F2', 12, self::W - 70 - self::width(self::ISSUER, 'F2', 12), 124, self::NAVY);
-        $ops[] = self::text(self::ISSUER_LINE, 'F1', 9, self::W - 70 - self::width(self::ISSUER_LINE, 'F1', 9), 108, self::INK);
+        $ops[] = $this->text('Check it at vitalcare.uk/verify/' . $c['code'], 'F1', 10, 70, 91, self::INK);
+        $ops[] = $this->text(self::ISSUER, 'F2', 12, self::W - 70 - self::width(self::ISSUER, 'F2', 12), 124, self::NAVY);
+        $ops[] = $this->text(self::ISSUER_LINE, 'F1', 9, self::W - 70 - self::width(self::ISSUER_LINE, 'F1', 9), 108, self::INK);
 
         $stream = implode("\n", $ops);
         $created = 'D:' . str_replace('-', '', $c['issuedOn'] ?? $c['completedOn']) . '000000Z';
@@ -76,11 +147,12 @@ final class CertificatePdf
             1 => '<< /Type /Catalog /Pages 2 0 R >>',
             2 => '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
             3 => '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' . self::W . ' ' . self::H . '] /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> /Contents 4 0 R >>',
-            4 => '<< /Length ' . strlen($stream) . " >>\nstream\n" . $stream . "\nendstream",
-            5 => '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>',
-            6 => '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>',
+            4 => self::stream($stream),
             7 => '<< /Title (Certificate ' . $display . ') /Producer (' . self::ISSUER . ') /CreationDate (' . $created . ') >>',
         ];
+        $objects += $this->fontObjects('F1', 5, 8) + $this->fontObjects('F2', 6, 13);
+        ksort($objects);
+
         $out = "%PDF-1.4\n%\xE2\xE3\xCF\xD3\n";
         $offsets = [];
         foreach ($objects as $n => $body) {
@@ -96,46 +168,175 @@ final class CertificatePdf
         return $out;
     }
 
-    /** Text width in points for a font ('F1' Helvetica, 'F2' Helvetica-Bold) at a size. */
-    public static function width(string $text, string $font, float $size): float
+    /**
+     * The objects behind one font: the Type0 font (at $type0), and from $first on the CIDFontType2, its
+     * descriptor, the embedded subset, the ToUnicode map and the CID-to-glyph map.
+     *
+     * @return array<int,string>
+     */
+    private function fontObjects(string $font, int $type0, int $first): array
     {
-        $w = self::widths($font);
-        $sum = 0;
-        foreach (str_split(self::encode($text)) as $ch) {
-            $o = ord($ch);
-            $sum += ($o >= 32 && $o <= 126) ? $w[$o - 32] : 556;
+        $f = self::font($font);
+        [$cidFont, $desc, $file, $toUni, $cidMap] = [$first, $first + 1, $first + 2, $first + 3, $first + 4];
+        $gids = [0];
+        $widths = [];
+        $uni = [];
+        foreach ($this->cids[$font] as $cp => $cid) {
+            $g = $f->glyphId($cp);
+            $gids[$cid] = $g;
+            $widths[] = (int) round($f->advance($g) * 1000 / $f->unitsPerEm);
+            $uni[] = sprintf('<%04X> <%s>', $cid, strtoupper(bin2hex((string) mb_convert_encoding(mb_chr($cp, 'UTF-8'), 'UTF-16BE', 'UTF-8'))));
         }
-        return $sum * $size / 1000;
+        ksort($gids);
+        $map = '';
+        foreach ($gids as $g) {
+            $map .= pack('n', $g);
+        }
+        $used = array_values(array_unique($gids));
+        sort($used);
+        // A subset is named with six capital letters; derive them from the glyphs so they never vary at random.
+        $tag = '';
+        foreach (str_split(substr(hash('sha256', $font . ':' . implode(',', $used)), 0, 6)) as $h) {
+            $tag .= chr(65 + (int) hexdec($h));
+        }
+        $name = '/' . $tag . '+' . $f->postScriptName;
+        $em = static fn (int $v): int => (int) round($v * 1000 / $f->unitsPerEm);
+        $subset = $f->subset($used);
+
+        $cmap = "/CIDInit /ProcSet findresource begin\n12 dict begin\nbegincmap\n"
+            . "/CIDSystemInfo << /Registry (Adobe) /Ordering (UCS) /Supplement 0 >> def\n"
+            . "/CMapName /Adobe-Identity-UCS def\n/CMapType 2 def\n"
+            . "1 begincodespacerange\n<0000> <FFFF>\nendcodespacerange\n";
+        foreach (array_chunk($uni, 100) as $chunk) {
+            $cmap .= count($chunk) . " beginbfchar\n" . implode("\n", $chunk) . "\nendbfchar\n";
+        }
+        $cmap .= "endcmap\nCMapName currentdict /CMap defineresource pop\nend\nend";
+        $w = $widths === [] ? '' : ' /W [1 [' . implode(' ', $widths) . ']]';
+
+        return [
+            $type0 => "<< /Type /Font /Subtype /Type0 /BaseFont $name /Encoding /Identity-H /DescendantFonts [$cidFont 0 R] /ToUnicode $toUni 0 R >>",
+            $cidFont => "<< /Type /Font /Subtype /CIDFontType2 /BaseFont $name /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >>"
+                . " /FontDescriptor $desc 0 R /DW " . $em($f->advance(0)) . $w . " /CIDToGIDMap $cidMap 0 R >>",
+            $desc => "<< /Type /FontDescriptor /FontName $name /Flags 4 /FontBBox [" . implode(' ', array_map($em, $f->bbox)) . ']'
+                . ' /ItalicAngle 0 /Ascent ' . $em($f->ascent) . ' /Descent ' . $em($f->descent)
+                . ' /CapHeight ' . $em($f->capHeight) . ' /XHeight ' . $em($f->xHeight) . ' /StemV ' . self::FONTS[$font][1]
+                . " /FontFile2 $file 0 R >>",
+            $file => self::stream($subset, true, ' /Length1 ' . strlen($subset)),
+            $toUni => self::stream($cmap),
+            $cidMap => self::stream($map, true),
+        ];
     }
 
-    /** UTF-8 to Windows-1252, then PDF string escaping. */
-    public static function escape(string $text): string
+    private static function stream(string $data, bool $deflate = false, string $extra = ''): string
     {
-        return strtr(self::encode($text), ['\\' => '\\\\', '(' => '\\(', ')' => '\\)']);
+        if ($deflate) {
+            $data = (string) gzcompress($data, 9);
+            $extra = ' /Filter /FlateDecode' . $extra;
+        }
+        return '<< /Length ' . strlen($data) . $extra . " >>\nstream\n" . $data . "\nendstream";
     }
 
     /** @return list<int> */
-    public static function widths(string $font): array
+    private static function codepoints(string $text): array
     {
-        if (!isset(self::$widths[$font])) {
-            $w = array_map('intval', explode(' ', $font === 'F2' ? self::HELVETICA_BOLD : self::HELVETICA));
-            if (count($w) !== 95) {
-                throw new \LogicException('Font width table must hold 95 entries');
+        $out = [];
+        foreach (mb_str_split(self::normalise($text), 1, 'UTF-8') as $ch) {
+            $cp = mb_ord($ch, 'UTF-8');
+            if ($cp !== false) {
+                $out[] = $cp;
             }
-            self::$widths[$font] = $w;
-        }
-        return self::$widths[$font];
-    }
-
-    private static function encode(string $text): string
-    {
-        $clean = (string) preg_replace('/[\x00-\x1f\x7f]/u', ' ', $text);
-        $out = '';
-        foreach (mb_str_split($clean, 1, 'UTF-8') as $ch) {
-            $c = @mb_convert_encoding($ch, 'Windows-1252', 'UTF-8');
-            $out .= ($c === '' || $c === false || ($c === '?' && $ch !== '?')) ? '?' : $c;
         }
         return $out;
+    }
+
+    private function cid(string $font, int $cp): int
+    {
+        return $this->cids[$font][$cp] ??= count($this->cids[$font]) + 1;
+    }
+
+    /**
+     * The text-showing operators for one line. Ordinary glyphs advance as the font says. A combining mark
+     * (zero advance, Unicode category Mn) is centred over the box of the letter before it, and raised above a
+     * tall letter or lowered under a descending one; stacked marks go one beyond the other.
+     */
+    private function show(string $text, string $font, float $size): string
+    {
+        $f = self::font($font);
+        $k = 1000 / $f->unitsPerEm;
+        $gap = (int) round($f->unitsPerEm * 0.04);
+        $segments = [];   // list of [rise in points as text, list of hex CID strings or TJ numbers]
+        $base = null;     // [box, advance] of the last letter
+        $up = 0;
+        $down = 0;
+        $add = static function (string $rise, string|float $item) use (&$segments): void {
+            $last = array_key_last($segments);
+            if ($last === null || $segments[$last][0] !== $rise) {
+                $segments[] = [$rise, []];
+                $last = array_key_last($segments);
+            }
+            $segments[$last][1][] = $item;
+        };
+        foreach (self::codepoints($text) as $cp) {
+            $g = $f->glyphId($cp);
+            $hex = sprintf('%04X', $this->cid($font, $cp));
+            $isMark = $g !== 0 && $base !== null && $f->advance($g) === 0 && preg_match('/^\p{Mn}$/u', mb_chr($cp, 'UTF-8')) === 1;
+            if (!$isMark) {
+                $add('0', $hex);
+                $base = [$f->glyphBox($g), $f->advance($g)];
+                $up = 0;
+                $down = 0;
+                continue;
+            }
+            [$bb, $adv] = $base;
+            $mb = $f->glyphBox($g);
+            $baseCentre = $bb[2] > $bb[0] ? ($bb[0] + $bb[2]) / 2 : $adv / 2;
+            $shift = $baseCentre - ($adv + ($mb[0] + $mb[2]) / 2);
+            $rise = 0;
+            if ($mb[1] >= $f->xHeight / 2) {
+                // Marks above are drawn for x-height letters: lift them over a taller letter or a mark already there.
+                $rise = max(0, $bb[3] - $f->xHeight) + $up;
+                $up += ($mb[3] - $mb[1]) + $gap;
+            } elseif ($mb[3] <= $f->xHeight / 4) {
+                $rise = min(0, $bb[1]) - $down;
+                $down += ($mb[3] - $mb[1]) + $gap;
+            }
+            $add('0', -$shift * $k);
+            $add(self::num($rise / $f->unitsPerEm * $size), $hex);
+            $add('0', $shift * $k);
+        }
+        $ops = [];
+        $current = '0';
+        foreach ($segments as [$rise, $items]) {
+            if ($rise !== $current) {
+                $ops[] = "$rise Ts";
+                $current = $rise;
+            }
+            $parts = [];
+            $run = '';
+            foreach ($items as $it) {
+                if (is_string($it)) {
+                    $run .= $it;
+                    continue;
+                }
+                if ($run !== '') {
+                    $parts[] = "<$run>";
+                    $run = '';
+                }
+                if (self::num($it) !== '0') {
+                    $parts[] = self::num($it);
+                }
+            }
+            if ($run !== '') {
+                $parts[] = "<$run>";
+            }
+            if ($parts !== []) {
+                $ops[] = '[' . implode(' ', $parts) . '] TJ';
+            }
+        }
+        if ($current !== '0') {
+            $ops[] = '0 Ts';
+        }
+        return implode(' ', $ops);
     }
 
     /**
@@ -152,7 +353,7 @@ final class CertificatePdf
         }
         $lines = [];
         $line = '';
-        foreach (preg_split('/\s+/', trim($text)) ?: [] as $word) {
+        foreach (preg_split('/\s+/u', trim(self::normalise($text))) ?: [] as $word) {
             $try = $line === '' ? $word : "$line $word";
             if ($line !== '' && self::width($try, $font, $min) > $max) {
                 $lines[] = $line;
@@ -169,19 +370,20 @@ final class CertificatePdf
         return $out;
     }
 
-    private static function centre(string $text, string $font, float $size, float $y, string $rgb): string
+    private function centre(string $text, string $font, float $size, float $y, string $rgb): string
     {
-        return self::text($text, $font, $size, (self::W - self::width($text, $font, $size)) / 2, $y, $rgb);
+        return $this->text($text, $font, $size, (self::W - self::width($text, $font, $size)) / 2, $y, $rgb);
     }
 
-    private static function text(string $text, string $font, float $size, float $x, float $y, string $rgb): string
+    private function text(string $text, string $font, float $size, float $x, float $y, string $rgb): string
     {
-        return sprintf('BT %s rg /%s %s Tf %s %s Td (%s) Tj ET', $rgb, $font, self::num($size), self::num($x), self::num($y), self::escape($text));
+        return sprintf('BT %s rg /%s %s Tf %s %s Td %s ET', $rgb, $font, self::num($size), self::num($x), self::num($y), $this->show($text, $font, $size));
     }
 
     private static function num(float $n): string
     {
-        return rtrim(rtrim(number_format($n, 2, '.', ''), '0'), '.');
+        $s = rtrim(rtrim(number_format($n, 2, '.', ''), '0'), '.');
+        return $s === '-0' ? '0' : $s;
     }
 
     private static function date(string $iso): string

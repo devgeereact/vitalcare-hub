@@ -27,7 +27,7 @@ Browser (React PWA, Clerk JS)  --HTTPS-->  Cloudflare  -->  cPanel (LiteSpeed)
 | Files | private folder `~/vitalcare-private/storage`, `files` table, `GET /api/files/{id}` | replaces three storage buckets |
 | Realtime | polling (notifications 60 s; none elsewhere) | replaces Realtime |
 | Scheduled work | cPanel cron running `php ~/vitalcare-private/app/bin/cron.php <task>` | expiry reminders daily 08:00, session reminders every 15 min, email outbox every minute, nightly backup |
-| PDF | server-side, drawn on request from the stored snapshot by `Certificates/CertificatePdf.php` (no dependency; D-018 item 6) | the snapshot never changes, so the same certificate always gives the same bytes; the deploy ships no `vendor/` |
+| PDF | server-side, drawn on request from the stored snapshot by `Certificates/CertificatePdf.php` (no dependency; D-018 item 6), text in embedded, subsetted Noto Sans (SIL OFL 1.1, `backend/assets/fonts/`) with a ToUnicode map | the snapshot never changes, so the same certificate always gives the same bytes; the deploy ships no `vendor/`; Latin, Vietnamese, Yoruba, Igbo, Greek and Cyrillic covered; RTL, CJK and Indic scripts are not (visible box) |
 | Hosting / DNS | cPanel (shared account, other sites present) + Cloudflare Full (strict) | origin lock in the live `.htaccess` is kept |
 | CI | GitHub Actions: lint, typecheck, tests, build, PHP lint and tests, gitleaks, Semgrep; no deploy job | minutes are limited; concurrency cancel, 10 minute timeouts |
 | Delivery | local build, `rsync` without `--delete`, checksum dry run first, `--exclude '/.htaccess'` | no CI deploy |
@@ -50,9 +50,10 @@ backend/                     PHP API (PHP 8.2+, no framework, PSR-4 namespace Vi
     Support/                 Db, Config, Migrator
     Security/                RateLimiter, Turnstile
     Mail/                    SmtpMailer, OutboxSender
-    Certificates/            CertificateCode, CertificateVerifier
+    Certificates/            CertificateCode, CertificateVerifier, CertificatePdf, TrueTypeFont
     Contact/                 ContactService
     (further domains are added the same way: Catalogue/, Learning/, Sessions/, Commerce/)
+  assets/fonts/              Noto Sans Regular and Bold (TTF) and their licence OFL.txt, embedded in certificate PDFs; deployed beside src/
   bin/                       CLI tools (migrate, backup, config-set, seed, send-outbox); never web-served
   migrations/                numbered SQL, never edited once applied
   tests/                     PHP suites, run on a throwaway local MariaDB

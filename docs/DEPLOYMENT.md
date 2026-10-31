@@ -26,7 +26,7 @@ Run it: **Actions > Deploy > Run workflow**, tick what you want (API, site, .hta
 
 | Verb | What it does | If it fails |
 |---|---|---|
-| `verify <sha>` | checks `SHA256SUMS`, refuses unsafe archive entries (absolute paths, `..`, links, odd names, unexpected top-level folders), checks the archive was built for this commit, runs `php -l` on every PHP file, refuses a site archive that carries an `api/` folder, a `.htaccess`, env files, source maps or dumps | nothing is staged as verified; live code untouched |
+| `verify <sha>` | checks `SHA256SUMS`, refuses unsafe archive entries (absolute paths, `..`, links, odd names, unexpected top-level folders: only `src bin migrations public assets tools RELEASE`; `assets/` may hold only `.ttf` fonts and `.txt` licences, and must hold the certificate fonts when the release has the PDF generator), checks the archive was built for this commit, runs `php -l` on every PHP file, refuses a site archive that carries an `api/` folder, a `.htaccess`, env files, source maps or dumps | nothing is staged as verified; live code untouched |
 | `activate-api <sha>` | rollback copy, then (only if migrations are pending) a **pinned backup** and the migrations, then the code (`rsync --checksum`, no delete), then waits and checks `/api/health` reports this release | a failed backup or migration stops before the code switches; a failed health check restores the previous code automatically |
 | `activate-site <sha>` | rollback copy of the files it will overwrite, upload without deleting, entry files last, `/.htaccess` and `api/` excluded, then checks the public `/build-id.txt` | the rollback copy holds the previous files |
 | `activate-htaccess <sha>` | runs `merge-htaccess.py` (fail-closed: refuses if the origin lock is missing), keeps a copy, checks the API still answers 200 | restores the previous file |
@@ -54,7 +54,7 @@ Migrations must be **backward compatible with the code that is still running** (
 5. First run: API only. The owner approves it in the GitHub UI. Success means `/api/health` reports the new release.
 6. After that run is proven, retire `scripts/deploy-api.sh` and `scripts/deploy-rsync.sh`.
 
-Changing the gate is a repeat of step 2 by the owner, never part of a deploy.
+Changing the gate is a repeat of step 2 by the owner, never part of a deploy. The gate changed on 31 Oct 2026 (the `assets/` folder for the certificate fonts, D-018 item 6): a copy installed before then refuses newer releases until it is re-installed; `status` prints the installed gate's sha256 to compare with `shasum -a 256 backend/bin/deploy-gate.sh`.
 
 ### Rotating the key
 
