@@ -81,7 +81,7 @@ A domain folder holds the classes of one product area, so a change to (for examp
 2. PHP verifies the token (`Jwt.php`), then resolves `sub` to a `users` row by `clerk_user_id`. On the first sign-in only, if no row matches, it links the one row whose `email` equals the verified `email` claim and whose `clerk_user_id` is empty. Anyone else is authenticated but has no access: every endpoint returns 403.
 3. `Authz` decides every action from the user row (role, organisation, active flag). Request bodies never supply role, owner or organisation ids. See `docs/AUTHORISATION-MAP.md`: policy, PHP check, test.
 4. Because Clerk sign-up is currently public, step 2's "no row, no access" rule is what protects the data. Closing sign-up is a Clerk write that waits for approval.
-5. The first `super_admin` row (the owner, no password concept) is created by `backend/bin/seed-super-admin.php`, run once with that email (E13). It is not a migration, so no personal address is stored in the repository. No demo, test or migrated users are ever created.
+5. The first `super_admin` row (the owner, no password concept) is created by `backend/bin/seed-super-admin.php`, run once with that email (E13). It is not a migration, so no personal address is stored in the repository. No demo, test or migrated users are ever created in a real database. `backend/bin/seed-demo.php` fills a LOCAL demo database only (it refuses unless the database is on 127.0.0.1/localhost, its name contains demo, test or local, and it is empty or `--reset` is given); for that local demo only, a Clerk development issuer (`*.clerk.accounts.dev`) may list `http://127.0.0.1:<port>` / `http://localhost:<port>` as authorised parties.
 
 ## Public endpoints (no token)
 

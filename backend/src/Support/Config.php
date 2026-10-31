@@ -51,8 +51,13 @@ final class Config
         if (!is_string($issuer) || !is_array($parties) || $parties === []) {
             throw new \RuntimeException('Configuration clerk.issuer and clerk.authorized_parties are required');
         }
+        // Only a Clerk DEVELOPMENT instance (issuer *.clerk.accounts.dev) may also list the local Vite origin over
+        // plain http on the loopback address, for `pnpm dev:local`. A production issuer never can.
+        $devIssuer = preg_match('#^https://[a-z0-9-]+\.clerk\.accounts\.dev\z#', $issuer) === 1;
         foreach ($parties as $p) {
-            if (!is_string($p) || !str_starts_with($p, 'https://') || str_ends_with($p, '/')) {
+            $https = is_string($p) && str_starts_with($p, 'https://') && !str_ends_with($p, '/');
+            $loopback = $devIssuer && is_string($p) && preg_match('#^http://(127\.0\.0\.1|localhost):[0-9]{2,5}\z#', $p) === 1;
+            if (!$https && !$loopback) {
                 throw new \RuntimeException('Authorised parties must be https origins without a trailing slash');
             }
         }
