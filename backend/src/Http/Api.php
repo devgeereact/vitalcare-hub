@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Vitalcare\Http;
 
+use Vitalcare\Auth\Authz;
 use Vitalcare\Auth\SessionResolver;
 use Vitalcare\Auth\User;
+use Vitalcare\Cms\AdminApi;
+use Vitalcare\Cms\PublicCourses;
 use Vitalcare\Certificates\CertificateVerifier;
 use Vitalcare\Contact\ContactService;
 use Vitalcare\Security\RateLimiter;
@@ -40,8 +43,11 @@ final class Api
     ) {
     }
 
-    /** @return array{0:int,1:array<string,mixed>,2?:array<string,string>} status, JSON body, optional extra headers */
-    public function handle(string $method, string $path, ?string $authorization, ?string $body = null, string $clientIp = ''): array
+    /**
+     * @param array<string,string> $query the query string (strings only)
+     * @return array{0:int,1:array<string,mixed>|RawBody,2?:array<string,string>} status, JSON body (or a download), optional extra headers
+     */
+    public function handle(string $method, string $path, ?string $authorization, ?string $body = null, string $clientIp = '', array $query = []): array
     {
         try {
             $path = rtrim($path, '/') ?: '/';
@@ -50,6 +56,9 @@ final class Api
                 $path === '/api/me' => $this->only('GET', $method, fn () => $this->me($authorization)),
                 preg_match('#^/api/verify/([^/]{1,60})$#', $path, $m) === 1 => $this->only('GET', $method, fn () => $this->verifyCertificate($m[1], $clientIp)),
                 $path === '/api/contact' => $this->only('POST', $method, fn () => $this->contact($body, $clientIp)),
+                $path === '/api/courses' => $this->only('GET', $method, fn () => $this->courses(null, $clientIp)),
+                preg_match('#^/api/courses/([^/]{1,100})$#', $path, $m) === 1 => $this->only('GET', $method, fn () => $this->courses($m[1], $clientIp)),
+                str_starts_with($path, '/api/admin/') => $this->admin($method, substr($path, strlen('/api/admin')), $authorization, $body, $query),
                 default => throw HttpError::notFound(),
             };
         } catch (HttpError $e) {
@@ -82,7 +91,7 @@ final class Api
     /** @return array{0:int,1:array<string,mixed>} */
     private function me(?string $authorization): array
     {
-        $user = $this->authenticate($authorization);
+        $user = $this->cmsUser($authorization);
         return [200, ['user' => [
             'id' => $user->id,
             'email' => $user->email,
@@ -108,6 +117,37 @@ final class Api
             throw new HttpError(403, 'no_access', 'Your email address does not have access. Contact info@vitalcare.uk.');
         }
         return $user;
+    }
+
+    /**
+     * D-018: only the owner and office staff sign in. A valid identity with any other role (or a disabled
+     * row) gets the same 403 no_access as an unknown email, so the answer says nothing about which it was.
+     */
+    private function cmsUser(?string $authorization): User
+    {
+        $user = $this->authenticate($authorization);
+        if (!(new Authz($user))->canUseCms()) {
+            throw new HttpError(403, 'no_access', 'Your email address does not have access. Contact info@vitalcare.uk.');
+        }
+        return $user;
+    }
+
+    /** @param array<string,string> $query */
+    private function admin(string $method, string $sub, ?string $authorization, ?string $body, array $query): array
+    {
+        $user = $this->cmsUser($authorization);
+        $now = $this->clock !== null ? ($this->clock)() : new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+        return (new AdminApi($this->database(), $user, new Authz($user), $now, $this->officeEmail, $body, $query))->handle($method, $sub);
+    }
+
+    /** Public. Published courses only; 120 reads per 5 minutes per caller. */
+    private function courses(?string $slug, string $clientIp): array
+    {
+        $pdo = $this->database();
+        (new RateLimiter($pdo, $this->clock !== null ? fn (): int => ($this->clock)()->getTimestamp() : null))
+            ->hit('courses', $clientIp !== '' ? $clientIp : 'unknown', 120, 300);
+        $c = new PublicCourses($pdo);
+        return $slug === null ? [200, ['courses' => $c->list()]] : [200, ['course' => $c->get(rawurldecode($slug))]];
     }
 
     /** Public. Same answer shape for every kind of "not issued". 30 checks per 5 minutes per caller. */

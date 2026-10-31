@@ -10,11 +10,15 @@ use Vitalcare\Http\HttpError;
 $org = make_org($pdo, 'Test Org');
 make_user($pdo, 'trainer@example.com', 'trainer');
 make_user($pdo, 'mgr@example.com', 'manager', $org);
+make_user($pdo, 'office@example.com', 'admin', $org);
+make_user($pdo, 'owner@example.com', 'super_admin');
 
 $tokens = [
     'tok-trainer-aaaaaaaaaaaaaaaaaaaaaaaa' => ['sub' => 'user_t', 'email' => 'trainer@example.com'],
     'tok-mgr-aaaaaaaaaaaaaaaaaaaaaaaaaaaaa' => ['sub' => 'user_m', 'email' => 'mgr@example.com'],
     'tok-stranger-aaaaaaaaaaaaaaaaaaaaaaaa' => ['sub' => 'user_s', 'email' => 'nobody@example.com'],
+    'tok-office-aaaaaaaaaaaaaaaaaaaaaaaaaa' => ['sub' => 'user_o', 'email' => 'office@example.com'],
+    'tok-owner-aaaaaaaaaaaaaaaaaaaaaaaaaaa' => ['sub' => 'user_w', 'email' => 'owner@example.com'],
 ];
 $verify = function (string $t) use ($tokens): array {
     return $tokens[$t] ?? throw HttpError::unauthorized();
@@ -50,14 +54,19 @@ check('/me with a too-short bearer is 401', $call('GET', '/api/me', 'Bearer shor
 check('/me with an invalid token is 401', $call('GET', '/api/me', 'Bearer tok-invalid-aaaaaaaaaaaaaaaaaaaaaaaaaa')[0] === 401);
 [$s, $b] = $call('GET', '/api/me', 'Bearer tok-stranger-aaaaaaaaaaaaaaaaaaaaaaaa');
 check('valid identity with no row is 403 no_access', $s === 403 && ($err([$s, $b])['code'] ?? '') === 'no_access');
+// D-018: only admin and super_admin sign in. Other roles get the same 403 no_access as a stranger.
 [$s, $b] = $call('GET', '/api/me', 'Bearer tok-trainer-aaaaaaaaaaaaaaaaaaaaaaaa');
-check('known user is 200 with their role', $s === 200 && $b['user']['role'] === 'trainer');
-check('/me returns no secrets or internals', array_keys($b['user']) === ['id', 'email', 'displayName', 'role', 'organisationId']);
-[$s, $b] = $call('GET', '/api/me', 'bearer tok-mgr-aaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
-check('the Bearer scheme is case-insensitive (RFC 7235)', $s === 200 && $b['user']['role'] === 'manager');
+check('a trainer row is 403 no_access (no LMS roles sign in)', $s === 403 && ($err([$s, $b])['code'] ?? '') === 'no_access');
 [$s, $b] = $call('GET', '/api/me', 'Bearer tok-mgr-aaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
-check('manager organisation id returned', $s === 200 && $b['user']['organisationId'] === $org);
-check('/me rejects POST with 405', $call('POST', '/api/me', 'Bearer tok-trainer-aaaaaaaaaaaaaaaaaaaaaaaa')[0] === 405);
+check('a manager row is 403 no_access', $s === 403 && ($err([$s, $b])['code'] ?? '') === 'no_access');
+check('the no_access answer is the same for a stranger and a non-CMS role', $call('GET', '/api/me', 'Bearer tok-stranger-aaaaaaaaaaaaaaaaaaaaaaaa')[1] === $b);
+[$s, $b] = $call('GET', '/api/me', 'Bearer tok-office-aaaaaaaaaaaaaaaaaaaaaaaaaa');
+check('an admin is 200 with their role', $s === 200 && $b['user']['role'] === 'admin');
+check('/me returns no secrets or internals', array_keys($b['user']) === ['id', 'email', 'displayName', 'role', 'organisationId']);
+check('admin organisation id returned', $b['user']['organisationId'] === $org);
+[$s, $b] = $call('GET', '/api/me', 'bearer tok-owner-aaaaaaaaaaaaaaaaaaaaaaaaaaa');
+check('the Bearer scheme is case-insensitive (RFC 7235)', $s === 200 && $b['user']['role'] === 'super_admin');
+check('/me rejects POST with 405', $call('POST', '/api/me', 'Bearer tok-office-aaaaaaaaaaaaaaaaaaaaaaaaaa')[0] === 405);
 
 // Unconfigured database: protected routes are 503, not a crash and not open.
 $closed = new Api($verify, null, '8.4.0', false);

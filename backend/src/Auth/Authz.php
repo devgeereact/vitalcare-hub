@@ -16,11 +16,47 @@ use Vitalcare\Http\HttpError;
  */
 final class Authz
 {
+    /**
+     * CMS permissions (D-018). Only admin and super_admin ever hold one. An unknown name holds none.
+     * Owner-only (super_admin): the public course statements, certificates without an attendance
+     * behind them, revocation, bulk exports, the audit log and staff accounts.
+     */
+    public const PERMISSIONS = [
+        'cms.read' => [Role::ADMIN, Role::SUPER_ADMIN],
+        'people.write' => [Role::ADMIN, Role::SUPER_ADMIN],
+        'organisations.write' => [Role::ADMIN, Role::SUPER_ADMIN],
+        'notes.write' => [Role::ADMIN, Role::SUPER_ADMIN],
+        'followups.write' => [Role::ADMIN, Role::SUPER_ADMIN],
+        'sessions.write' => [Role::ADMIN, Role::SUPER_ADMIN],
+        'attendance.write' => [Role::ADMIN, Role::SUPER_ADMIN],
+        'certificates.issue' => [Role::ADMIN, Role::SUPER_ADMIN],
+        'enquiries.write' => [Role::ADMIN, Role::SUPER_ADMIN],
+        'courses.write' => [Role::SUPER_ADMIN],
+        'certificates.issue_manual' => [Role::SUPER_ADMIN],
+        'certificates.revoke' => [Role::SUPER_ADMIN],
+        'export' => [Role::SUPER_ADMIN],
+        'audit.read' => [Role::SUPER_ADMIN],
+        'users.manage' => [Role::SUPER_ADMIN],
+    ];
+
     private readonly bool $usable;
 
     public function __construct(private readonly ?User $user)
     {
         $this->usable = $user !== null && $user->active && Role::valid($user->role);
+    }
+
+    /** D-018: only the owner and office staff sign in. Everyone else, including other roles, is "no access". */
+    public function canUseCms(): bool
+    {
+        return $this->has(Role::ADMIN, Role::SUPER_ADMIN);
+    }
+
+    /** One named CMS permission. Fails closed for an unknown name and for anyone outside the CMS. */
+    public function can(string $permission): bool
+    {
+        $roles = self::PERMISSIONS[$permission] ?? null;
+        return $roles !== null && $this->canUseCms() && $this->has(...$roles);
     }
 
     public function authenticated(): bool

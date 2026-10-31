@@ -22,21 +22,31 @@ $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 $auth = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? null;
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-// Read one byte more than the limit so an oversized body is detected, not silently truncated.
-$raw = $method === 'POST' ? file_get_contents('php://input', false, null, 0, 16385) : null;
+// Read one byte more than the largest limit (the CMS allows 64 KB) so an oversized body is detected, not silently truncated.
+$raw = in_array($method, ['POST', 'PUT', 'PATCH'], true) ? file_get_contents('php://input', false, null, 0, 65537) : null;
 // Cloudflare IP restoration is on for this account, so REMOTE_ADDR is the visitor. Forwarded headers are never trusted.
 $ip = is_string($_SERVER['REMOTE_ADDR'] ?? null) ? $_SERVER['REMOTE_ADDR'] : '';
 
+// Query string: plain string values only (no arrays), so handlers never see unexpected shapes.
+$query = array_filter($_GET, static fn ($v, $k): bool => is_string($k) && is_string($v), ARRAY_FILTER_USE_BOTH);
+
 [$status, $body, $headers] = array_pad(
-    Bootstrap::api($root, $name)->handle($method, $path, is_string($auth) ? $auth : null, $raw === false ? null : $raw, $ip),
+    Bootstrap::api($root, $name)->handle($method, $path, is_string($auth) ? $auth : null, $raw === false ? null : $raw, $ip, $query),
     3,
     [],
 );
 
 http_response_code($status);
-header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
+if ($body instanceof Vitalcare\Http\RawBody) {
+    foreach ($body->headers() as $k => $v) {
+        header($k . ': ' . $v);
+    }
+    echo $body->content;
+    exit;
+}
+header('Content-Type: application/json; charset=utf-8');
 foreach ($headers as $k => $v) {
     header($k . ': ' . $v);
 }
