@@ -1,5 +1,30 @@
 # Authorisation map: policy, PHP check, test
 
+## CMS (D-018, 31 Oct 2026): the rules that ship
+
+Only two roles sign in. `Authz::canUseCms()` is true for an active `admin` or `super_admin` and false for everything else (no row, disabled, `trainer`, `manager`, `learner`, an unknown role). Every `/api/admin/*` route and `/api/me` check it first and answer `403 no_access` otherwise. Then each route checks one named permission with `Authz::can()`; an unknown permission name is false (fail closed). The permission table lives in `Authz::PERMISSIONS`; no handler tests a role itself.
+
+| Permission | admin | super_admin | Routes | Test |
+|---|---|---|---|---|
+| `cms.read` | yes | yes | every GET under `/api/admin` except those below; `/api/me` | `110-cms-permissions.php` |
+| `people.write`, `organisations.write`, `notes.write`, `followups.write` | yes | yes | POST/PATCH people, organisations, notes, follow-ups | `110`, `120-people-orgs.php` |
+| `courses.write` | no | yes | POST/PATCH `/api/admin/courses` (public statements) | `110`, `130-courses.php` |
+| `sessions.write`, `attendance.write` | yes | yes | sessions, attendees | `110`, `140-sessions.php` |
+| `certificates.issue` | yes | yes | POST certificates `{attendeeId}` | `110`, `150-certificates.php` |
+| `certificates.issue_manual` | no | yes | POST certificates `{personId,...}` | `110`, `150` |
+| `certificates.revoke` | no | yes | POST `/certificates/{id}/revoke` | `110`, `150` |
+| `enquiries.write` | yes | yes | PATCH enquiry, notes, reply | `110`, `170-office.php` |
+| `export` | no | yes | `/api/admin/export/*.csv` | `110`, `180-export-audit.php` |
+| `audit.read` | no | yes | `/api/admin/audit` | `110`, `180` |
+| `users.manage` | no | yes | `/api/admin/users` | `110`, `180` |
+
+Anonymous (no token) is 401 on every one of these routes; a valid identity without a CMS row is 403 `no_access`; both are tested route by route in `110`. Public routes (`/api/health`, `/api/verify/{code}`, `/api/contact`, `/api/courses`, `/api/courses/{slug}`) need no sign-in and are rate limited (except health).
+
+## Retired by D-018 (kept for history)
+
+The table below was the plan for the learning platform. Its learner, trainer and manager rows are **not** ported: learners never sign in and the API lets no trainer or manager in. The predicates (`isStaff`, `staffFor`, `canReadPerson`, `sameOrg`) stay in `Authz` with their tests, unused by any route, so a later portal can reuse them.
+
+
 Status: PLANNED. Generated from a static replay of the 95 source migrations (`scripts` not committed; see `docs/inventory/`). The source policies were **not** compared with the live `pg_policies` (no live Supabase access, by instruction), so this is an ASSUMPTION about the source's final state. No PHP check or test below exists yet. Each row becomes DONE only when its test has been seen to pass.
 
 ## How to read this

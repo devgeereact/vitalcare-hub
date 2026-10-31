@@ -1,20 +1,22 @@
 # Roadmap
 
-Each slice is thin and end to end. One slice at a time. Each ends with `pnpm check`, PHP checks and its listed tests green, then a checkpoint. Nothing reaches the server without its own approval.
+Each slice is thin and end to end. One slice at a time. Each ends with `pnpm check`, PHP checks and its listed tests green, then a checkpoint. Nothing reaches the server without its own approval. Re-scoped 31 Oct 2026 (D-018): the learning-platform slices are gone; the CMS replaces them.
 
 | # | Slice | Acceptance criteria | Status |
 |---|---|---|---|
-| 0 | Foundation | `docs/FOUNDATION-ACCEPTANCE` gate closed: repo, CI, backup with restore test, database and users, private config, `.htaccess` merged, `/api/health` live and reporting the real PHP version | PLANNED |
-| 1 | Identity and authorisation core | `Jwt.php` ported with its tests; `users` table and first-sign-in linking; `Authz` with the five roles; unknown email gets 403 everywhere; super admin seed; sign-in screen (email code) and a "who am I" screen. Tests: token tamper, expiry, wrong `azp`, unknown user, role escalation attempt | PARTIAL: Jwt, resolver, Authz, `/api/health`, `/api/me`, migration 001 and 184 PHP assertions are DONE locally; the sign-in and account screens are built and tested with Clerk mocked; a real email-code sign-in is NOT TESTED; nothing is deployed |
-| 2 | Front door (R1) | **Started (local):** design tokens, self-hosted fonts, logos, shell, claim-register build check, PWA icons. **Done locally:** certificate verify endpoint and page, rate limiter, contact form (queue only) and page. **Still to do:** SMTP outbox sender, maintenance cron, public pages with proven-only copy; claim-register build check; course list and detail from the database; contact form with Turnstile and outbox email; certificate verify page and endpoint with three states and rate limit; legal pages; replaces the coming-soon page | PARTIAL |
-| 3 | Learner core (R2) | Enrol, lessons, progress, assessments with server-side grading and no answer-key leak, completion, certificate approval and PDF, expiry reminders by cron, in-app notifications by polling | PLANNED |
-| 4 | Delivery (R3) | Sessions online and in person, bookings, attendance, trainer view, calendar and `.ics`, announcements, blog | PLANNED |
-| 5 | Employers and orders (R4) | Organisation register (in date, due in 30 days, lapsed), group booking, orders by bank transfer with server pricing, coupons, invoices, exports, audit viewer | PLANNED |
+| 0 | Foundation | repo, CI, backup with restore test, database and users, private config, `.htaccess` merged, `/api/health` live and reporting the real PHP version | PARTIAL (see `docs/FOUNDATION-PLAN.md`) |
+| 1 | Identity and authorisation core | `Jwt.php` with its tests; `users` table and first-sign-in linking; `Authz`; unknown email gets 403 everywhere; super admin seed; sign-in screen (email code). Tests: token tamper, expiry, wrong `azp`, unknown user, role escalation attempt | DONE locally; a real email-code sign-in is NOT TESTED |
+| 2 | Front door (R1) | design tokens, fonts, logos, shell, claim-register build check; verify endpoint and page; contact form with Turnstile and outbox email; SMTP sender; course list and detail **from the database**; legal pages; replaces the coming-soon page | PARTIAL: legal pages and launch (E17) remain |
+| 3 | CMS core (R2) | only `admin` and `super_admin` sign in; people, organisations, courses (owner-only edits, published flag), sessions and attendance; audit log with no personal data; search; dashboard | branch `feature/cms` |
+| 4 | Certificates and renewals (R2) | issue from attendance or by hand with a reason; server-side expiry incl. month-end; PDF; revoke with reason; verify shows Valid, Expired, Revoked, Not issued; renewals view (30, 60, 90 days, expired); reminders at 60, 30, 7 days through the outbox, idempotent per certificate and stage | branch `feature/cms` |
+| 5 | Office tools (R2) | notes and follow-ups on people and organisations; enquiries inbox (status, assignee, notes, reply by email); CSV export (formula-injection safe, owner only); staff accounts (owner only) | branch `feature/cms` |
+
+Status of slices 3 to 5 is kept in `.agent/CURRENT-TASK.md` and `docs/AUDIT.md` while the branch is open.
 
 ## Later / deferred (decision per item)
 
-Payroll, forums and Q&A, departments, learning paths, plan billing, library and files, learner reviews, AI authoring helper (staff only, no personal data), web push.
+An employer or learner portal (the role values are kept), orders and invoices, calendar `.ics` files, payroll, learning paths, web push, AI helpers (staff only, no personal data). Each needs its own decision.
 
 ## Order logic
 
-Slices 1 and 2 give the public a true site and a working verify page with no learner accounts. Slice 3 is the product. Slice 5 waits for payment details and VAT status, which only the owner can supply.
+Slices 1 and 2 give the public a true site and a working verify page with no learner accounts. Slices 3 to 5 give the office its record. The public course pages read the CMS, so the site can launch only after the owner has entered and published the course facts.
